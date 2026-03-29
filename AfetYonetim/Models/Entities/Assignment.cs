@@ -18,7 +18,7 @@ namespace AfetYonetim.Models.Entities
         [Required]
         [MaxLength(450)]
         [Display(Name = "Atayan Admin")]
-        public string AdminId { get; set; } = string.Empty;
+        public string AssignedByAdminId { get; set; } = string.Empty;
         public ApplicationUser? AssignedByAdmin { get; set; }
 
         [Required]
@@ -34,7 +34,6 @@ namespace AfetYonetim.Models.Entities
 
         [MaxLength(1000)]
         [Display(Name = "Notlar")]
-        public string? Notes { get; set; } 
+        public string? Notes { get; set; }
     }
-
 }
