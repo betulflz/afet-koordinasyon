@@ -1,0 +1,15 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# macOS
+.DS_Store
+
+# Superpowers
+.superpowers/
+
+# Docker
+mssql_data/
