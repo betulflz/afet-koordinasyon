@@ -1,15 +1,7 @@
-# .NET
 bin/
 obj/
+.DS_Store
 *.user
 *.suo
 .vs/
-
-# macOS
-.DS_Store
-
-# Superpowers
 .superpowers/
-
-# Docker
-mssql_data/
