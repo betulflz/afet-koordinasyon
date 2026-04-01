@@ -64,7 +64,7 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    // await SeedData.InitializeAsync(services); // Şimdilik burayı yorum satırı yapıyoruz!
+    await SeedData.InitializeAsync(services); // Şimdilik burayı yorum satırı yapıyoruz!
 }
 
 app.Run();

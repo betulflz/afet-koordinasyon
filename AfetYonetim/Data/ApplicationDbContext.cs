@@ -40,7 +40,7 @@ namespace AfetYonetim.Data
                 entity.HasOne(h => h.Region)
                     .WithMany(r => r.HelpRequests)
                     .HasForeignKey(h => h.RegionId)
-                    .OnDelete(DeleteBehavior.SetNull);
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ---- Assignment İlişkileri ----
@@ -77,7 +77,7 @@ namespace AfetYonetim.Data
                 entity.HasOne(u => u.Region)
                     .WithMany(r => r.Users)
                     .HasForeignKey(u => u.RegionId)
-                    .OnDelete(DeleteBehavior.SetNull);
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ---- AuditLog İlişkileri ----
