@@ -1,8 +1,64 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card bg-gradient-primary text-white mb-4">
+            <div class="card-body text-center py-5">
+                <h1 class="display-5 font-weight-bold">
+                    <i class="fas fa-hands-helping mr-2"></i>
+                    Afet Yönetim Sistemi
+                </h1>
+                <p class="lead mt-3">
+                    Deprem sonrası acil koordinasyon ve yardım yönetim platformu.
+                    Afetzedeler, gönüllüler ve koordinatörler arasında köprü kuruyoruz.
+                </p>
+                <div class="mt-4">
+                    <a href="@Url.Action("Login", "Account")" class="btn btn-light btn-lg mr-2">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Giriş Yap
+                    </a>
+                    <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus mr-1"></i> Kayıt Ol
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-hand-holding-heart fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Yardım Talebi</h5>
+                        <p class="card-text text-muted">
+                            Afetzedeler gıda, su, ilaç, çadır gibi ihtiyaçlarını harita üzerinden bildiriyor.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-tasks fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Koordinasyon</h5>
+                        <p class="card-text text-muted">
+                            Yöneticiler talepleri analiz eder, uygun gönüllüleri görevlendirir.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-truck fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Teslimat Takibi</h5>
+                        <p class="card-text text-muted">
+                            Gönüllüler görev alır, yardımları ulaştırır ve durumu günceller.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
