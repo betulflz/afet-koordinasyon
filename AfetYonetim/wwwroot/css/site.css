@@ -1,31 +1,40 @@
-html {
-  font-size: 14px;
+/* Genel özel stiller */
+
+/* Sidebar logo alanı */
+.brand-text {
+    font-weight: 700;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* Durum badge'leri */
+.badge-bekliyor { background-color: #ffc107; color: #000; }
+.badge-onaylandi { background-color: #17a2b8; color: #fff; }
+.badge-atandi { background-color: #007bff; color: #fff; }
+.badge-yolda { background-color: #fd7e14; color: #fff; }
+.badge-teslim { background-color: #28a745; color: #fff; }
+.badge-reddedildi { background-color: #dc3545; color: #fff; }
+.badge-iptal { background-color: #6c757d; color: #fff; }
+
+/* Aciliyet renkleri */
+.urgency-dusuk { color: #28a745; }
+.urgency-orta { color: #ffc107; }
+.urgency-yuksek { color: #dc3545; }
+
+/* Risk renkleri */
+.risk-dusuk { color: #28a745; }
+.risk-orta { color: #ffc107; }
+.risk-yuksek { color: #fd7e14; }
+.risk-kritik { color: #dc3545; }
+
+/* Login sayfası */
+.login-page {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+.login-box .card {
+    border-radius: 12px;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* Genel kartlar */
+.small-box .inner h3 {
+    font-size: 2.2rem;
+    font-weight: 700;
 }

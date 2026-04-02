@@ -1,4 +1,7 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿// Genel JavaScript dosyası
+// Faz 2-3'te harita ve grafik kodları buraya eklenecek
 
-// Write your JavaScript code.
+$(document).ready(function () {
+    // Tooltip aktifleştirme (Üstüne gelince çıkan ufak bilgi kutucukları)
+    $('[data-toggle="tooltip"]').tooltip();
+});
