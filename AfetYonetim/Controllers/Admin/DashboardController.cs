@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+
+
 namespace AfetYonetim.Controllers.Admin
 {
     [Authorize(Roles = "Admin")]

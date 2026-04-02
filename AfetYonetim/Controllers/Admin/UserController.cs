@@ -11,7 +11,7 @@ namespace AfetYonetim.Controllers.Admin
         public IActionResult Index()
         {
             ViewData["Title"] = "Kullanıcılar";
-            return View("~/Views/Admin/Users/Index.cshtml");
+            return View("~/Views/Admin/User/Index.cshtml");
         }
     }
 }

@@ -11,21 +11,21 @@ namespace AfetYonetim.Controllers.Admin
         public IActionResult Index()
         {
             ViewData["Title"] = "Bölge Yönetimi";
-            return View("~/Views/Admin/Regions/Index.cshtml");
+            return View("~/Views/Admin/Region/Index.cshtml");
         }
 
         [HttpGet("Create")]
         public IActionResult Create()
         {
             ViewData["Title"] = "Yeni Bölge";
-            return View("~/Views/Admin/Regions/Create.cshtml");
+            return View("~/Views/Admin/Region/Create.cshtml");
         }
 
         [HttpGet("Edit/{id}")]
         public IActionResult Edit(Guid id)
         {
             ViewData["Title"] = "Bölge Düzenle";
-            return View("~/Views/Admin/Regions/Edit.cshtml");
+            return View("~/Views/Admin/Region/Edit.cshtml");
         }
     }
 }

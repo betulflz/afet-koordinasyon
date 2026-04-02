@@ -46,13 +46,13 @@ namespace AfetYonetim.Controllers
                 {
                     var roles = await _userManager.GetRolesAsync(user);
 
-                    // Rol bazlı yönlendirme
+                    // HATA BURADAYDI, DÜZELTİLDİ: Doğrudan URL veriyoruz
                     if (roles.Contains("Admin"))
-                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                        return Redirect("/Admin/Dashboard");
                     else if (roles.Contains("Afetzede"))
-                        return RedirectToAction("Index", "HelpRequest", new { area = "Afetzede" });
+                        return Redirect("/Afetzede/HelpRequest");
                     else if (roles.Contains("Gonullu"))
-                        return RedirectToAction("Index", "Assignment", new { area = "Gonullu" });
+                        return Redirect("/Gonullu/Assignment");
                 }
 
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -80,7 +80,6 @@ namespace AfetYonetim.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Sadece Afetzede ve Gonullu kayıt olabilir
             if (model.Role != "Afetzede" && model.Role != "Gonullu")
             {
                 ModelState.AddModelError("Role", "Geçersiz rol seçimi.");
@@ -108,10 +107,11 @@ namespace AfetYonetim.Controllers
 
                 TempData["Success"] = "Hesabınız başarıyla oluşturuldu!";
 
+                // BURASI DA DÜZELTİLDİ
                 if (model.Role == "Afetzede")
-                    return RedirectToAction("Index", "HelpRequest", new { area = "Afetzede" });
+                    return Redirect("/Afetzede/HelpRequest");
                 else
-                    return RedirectToAction("Index", "Assignment", new { area = "Gonullu" });
+                    return Redirect("/Gonullu/Assignment");
             }
 
             foreach (var error in result.Errors)
