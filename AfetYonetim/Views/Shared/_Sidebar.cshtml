@@ -1,0 +1,140 @@
+@inject SignInManager<ApplicationUser> SignInManager
+<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        @* ============ ADMIN MENÜSÜ ============ *@
+        @if (User.IsInRole("Admin"))
+        {
+            <li class="nav-header">YÖNETİM</li>
+
+            <li class="nav-item">
+                <a href="/Admin/Dashboard" class="nav-link">
+                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                    <p>Dashboard</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Admin/HelpRequest" class="nav-link">
+                    <i class="nav-icon fas fa-hand-holding-heart"></i>
+                    <p>Yardım Talepleri</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Admin/Assignment" class="nav-link">
+                    <i class="nav-icon fas fa-tasks"></i>
+                    <p>Görevlendirmeler</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Admin/Announcement" class="nav-link">
+                    <i class="nav-icon fas fa-bullhorn"></i>
+                    <p>Duyurular</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Admin/Region" class="nav-link">
+                    <i class="nav-icon fas fa-map-marked-alt"></i>
+                    <p>Bölge Yönetimi</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Admin/User" class="nav-link">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>Kullanıcılar</p>
+                </a>
+            </li>
+        }
+
+        @* ============ AFETZEDE MENÜSÜ ============ *@
+        @if (User.IsInRole("Afetzede"))
+        {
+            <li class="nav-header">YARDIM</li>
+
+            <li class="nav-item">
+                <a href="/Afetzede/HelpRequest" class="nav-link">
+                    <i class="nav-icon fas fa-list"></i>
+                    <p>Taleplerim</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Afetzede/HelpRequest/Create" class="nav-link">
+                    <i class="nav-icon fas fa-plus-circle"></i>
+                    <p>Yeni Talep</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Afetzede/Announcement" class="nav-link">
+                    <i class="nav-icon fas fa-bullhorn"></i>
+                    <p>Duyurular</p>
+                </a>
+            </li>
+        }
+
+        @* ============ GÖNÜLLÜ MENÜSÜ ============ *@
+        @if (User.IsInRole("Gonullu"))
+        {
+            <li class="nav-header">GÖREVLER</li>
+
+            <li class="nav-item">
+                <a href="/Gonullu/Assignment" class="nav-link">
+                    <i class="nav-icon fas fa-clipboard-list"></i>
+                    <p>Görevlerim</p>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/Gonullu/Announcement" class="nav-link">
+                    <i class="nav-icon fas fa-bullhorn"></i>
+                    <p>Duyurular</p>
+                </a>
+            </li>
+        }
+
+        @* ============ ORTAK MENÜ ============ *@
+        <li class="nav-header">HESAP</li>
+
+        <li class="nav-item">
+            @{
+                var profileUrl = User.IsInRole("Afetzede") ? "/Afetzede/Profile" :
+                    (User.IsInRole("Gonullu") ? "/Gonullu/Profile" : "/");
+            }
+            <a href="@profileUrl" class="nav-link">
+                <i class="nav-icon fas fa-user-cog"></i>
+                <p>Profil</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                <button type="submit" class="nav-link btn btn-link text-left w-100" style="border: none;">
+                    <i class="nav-icon fas fa-sign-out-alt"></i>
+                    <p>Çıkış Yap</p>
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a href="/Account/Login" class="nav-link">
+                <i class="nav-icon fas fa-sign-in-alt"></i>
+                <p>Giriş Yap</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/Account/Register" class="nav-link">
+                <i class="nav-icon fas fa-user-plus"></i>
+                <p>Kayıt Ol</p>
+            </a>
+        </li>
+    }
+
+</ul>
