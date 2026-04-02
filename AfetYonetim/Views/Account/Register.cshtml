@@ -1,0 +1,138 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = "_LoginLayout";
+}
+
+<div class="register-box">
+    <div class="card card-outline card-primary">
+        <div class="card-header text-center">
+            <h1 class="h4">
+                <i class="fas fa-hands-helping text-danger mr-2"></i>
+                <b>Afet</b> Yönetim
+            </h1>
+            <p class="text-muted mb-0">Yeni hesap oluşturun</p>
+        </div>
+        <div class="card-body">
+
+            <form asp-action="Register" asp-controller="Account" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="input-group mb-3">
+                    <input asp-for="Name" class="form-control" placeholder="Adınız">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="Name" class="text-danger small"></span>
+
+                <div class="input-group mb-3">
+                    <input asp-for="Surname" class="form-control" placeholder="Soyadınız">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="Surname" class="text-danger small"></span>
+
+                <div class="input-group mb-3">
+                    <input asp-for="Email" class="form-control" placeholder="E-posta adresiniz">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-envelope"></span>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="Email" class="text-danger small"></span>
+
+                <div class="input-group mb-3">
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="Telefon (opsiyonel)">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-phone"></span>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+
+                <div class="input-group mb-3">
+                    <input asp-for="Password" class="form-control" placeholder="Şifre (en az 6 karakter)">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+
+                <div class="input-group mb-3">
+                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Şifre tekrarı">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Role" class="text-muted small">Kayıt Türü</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card text-center p-3" style="cursor: pointer;" onclick="selectRole('Afetzede')">
+                                <input type="radio" asp-for="Role" value="Afetzede" id="roleAfetzede" class="d-none">
+                                <label for="roleAfetzede" style="cursor: pointer;" class="mb-0">
+                                    <i class="fas fa-user fa-2x text-warning mb-2 d-block"></i>
+                                    <strong>Afetzede</strong>
+                                    <small class="d-block text-muted">Yardım talep edin</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card text-center p-3" style="cursor: pointer;" onclick="selectRole('Gonullu')">
+                                <input type="radio" asp-for="Role" value="Gonullu" id="roleGonullu" class="d-none">
+                                <label for="roleGonullu" style="cursor: pointer;" class="mb-0">
+                                    <i class="fas fa-hands-helping fa-2x text-success mb-2 d-block"></i>
+                                    <strong>Gönüllü</strong>
+                                    <small class="d-block text-muted">Yardım götürün</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Role" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-user-plus mr-1"></i> Kayıt Ol
+                </button>
+            </form>
+
+            <hr>
+            <p class="mb-0 text-center">
+                <a href="@Url.Action("Login", "Account")" class="text-center">
+                    Zaten hesabınız var mı? Giriş yapın
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function selectRole(role) {
+        // Radio butonunu seç
+        document.getElementById('role' + role).checked = true;
+
+        // Kartlara görsel geri bildirim
+        document.querySelectorAll('.form-group .card').forEach(function(card) {
+            card.style.border = '2px solid transparent';
+        });
+
+        // Seçilen kartı vurgula
+        event.currentTarget.style.border = '2px solid #007bff';
+    }
+</script>
+}
