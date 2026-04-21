@@ -1,5 +1,24 @@
+@model HelpRequestIndexViewModel
+
 @{
-    ViewData["Title"] = "Yardım Talepleri";
+    string StatusBadge(RequestStatus s) => s switch
+    {
+        RequestStatus.Bekliyor => "badge-warning",
+        RequestStatus.Onaylandi => "badge-info",
+        RequestStatus.Atandi => "badge-primary",
+        RequestStatus.Yolda => "badge-secondary",
+        RequestStatus.TeslimEdildi => "badge-success",
+        RequestStatus.Reddedildi => "badge-danger",
+        _ => "badge-dark"
+    };
+
+    string UrgencyBadge(UrgencyLevel u) => u switch
+    {
+        UrgencyLevel.Dusuk => "badge-success",
+        UrgencyLevel.Orta => "badge-warning",
+        UrgencyLevel.Yuksek => "badge-danger",
+        _ => "badge-dark"
+    };
 }
 
 <div class="card">
@@ -7,24 +26,103 @@
         <h3 class="card-title"><i class="fas fa-hand-holding-heart mr-2"></i>Tüm Yardım Talepleri</h3>
     </div>
     <div class="card-body">
-        <p class="text-muted">Talep listesi Faz 2'de geliştirilecek.</p>
-        <table class="table table-bordered table-hover">
-            <thead>
+        <form method="get" class="mb-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <select name="status" class="form-control">
+                        <option value="">Tüm Durumlar</option>
+                        @foreach (RequestStatus s in Enum.GetValues<RequestStatus>())
+                        {
+                            <option value="@s" selected="@(Model.Status == s)">@s.GetDisplayName()</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="category" class="form-control">
+                        <option value="">Tüm Kategoriler</option>
+                        @foreach (HelpCategory c in Enum.GetValues<HelpCategory>())
+                        {
+                            <option value="@c" selected="@(Model.Category == c)">@c.GetDisplayName()</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="urgency" class="form-control">
+                        <option value="">Tüm Aciliyetler</option>
+                        @foreach (UrgencyLevel u in Enum.GetValues<UrgencyLevel>())
+                        {
+                            <option value="@u" selected="@(Model.Urgency == u)">@u.GetDisplayName()</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control" placeholder="Ara..."
+                           value="@Model.Search" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-search mr-1"></i> Filtrele
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
                 <tr>
-                    <th>Talep No</th>
                     <th>Talep Eden</th>
                     <th>Kategori</th>
                     <th>Aciliyet</th>
                     <th>Durum</th>
+                    <th>Bölge</th>
                     <th>Tarih</th>
                     <th>İşlem</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td colspan="7" class="text-center text-muted">Henüz talep bulunmuyor</td>
-                </tr>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Kayıt bulunamadı.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.UserFullName</td>
+                            <td>@item.Category.GetDisplayName()</td>
+                            <td><span class="badge @UrgencyBadge(item.Urgency)">@item.Urgency.GetDisplayName()</span></td>
+                            <td><span class="badge @StatusBadge(item.Status)">@item.Status.GetDisplayName()</span></td>
+                            <td>@item.RegionName</td>
+                            <td>@item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <a href="/Admin/HelpRequest/Details/@item.Id" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link"
+                               href="/Admin/HelpRequest?page=@i&status=@Model.Status&category=@Model.Category&urgency=@Model.Urgency&search=@Model.Search">
+                                @i
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
     </div>
 </div>
