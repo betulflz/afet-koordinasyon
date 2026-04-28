@@ -1,5 +1,14 @@
+@model AfetYonetim.Models.ViewModels.Gonullu.AssignmentListViewModel
+
 @{
-    ViewData["Title"] = "Görevlerim";
+    string AssignBadge(AssignmentStatus s) => s switch
+    {
+        AssignmentStatus.Atandi => "badge-primary",
+        AssignmentStatus.Yolda => "badge-warning",
+        AssignmentStatus.TeslimEdildi => "badge-success",
+        AssignmentStatus.Iptal => "badge-dark",
+        _ => "badge-dark"
+    };
 }
 
 <div class="card">
@@ -7,6 +16,57 @@
         <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Görevlerim</h3>
     </div>
     <div class="card-body">
-        <p class="text-muted">Görev listesi Faz 2'de geliştirilecek.</p>
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Kategori</th>
+                    <th>Açıklama</th>
+                    <th>Konum</th>
+                    <th>Durum</th>
+                    <th>Atanma Tarihi</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Henüz göreviniz yok.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.RequestCategory.GetDisplayName()</td>
+                            <td>@item.RequestDescription</td>
+                            <td>@(item.RequestLocation ?? "-")</td>
+                            <td><span class="badge @AssignBadge(item.Status)">@item.Status.GetDisplayName()</span></td>
+                            <td>@item.AssignedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <a href="/Gonullu/Assignment/Details/@item.Id" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="/Gonullu/Assignment?page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
     </div>
 </div>

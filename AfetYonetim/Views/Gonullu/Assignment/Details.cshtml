@@ -1,12 +1,114 @@
+@model AfetYonetim.Models.ViewModels.Gonullu.AssignmentDetailViewModel
+
 @{
-    ViewData["Title"] = "Görev Detayı";
+    string AssignBadge(AssignmentStatus s) => s switch
+    {
+        AssignmentStatus.Atandi => "badge-primary",
+        AssignmentStatus.Yolda => "badge-warning",
+        AssignmentStatus.TeslimEdildi => "badge-success",
+        AssignmentStatus.Iptal => "badge-dark",
+        _ => "badge-dark"
+    };
 }
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Görev Detayı</h3>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-clipboard-check mr-2"></i>Görev Bilgileri</h3>
+                <span class="badge @AssignBadge(Model.Assignment.Status) float-right p-2">
+                    @Model.Assignment.Status.GetDisplayName()
+                </span>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Kategori</dt>
+                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Category.GetDisplayName()</dd>
+
+                    <dt class="col-sm-4">Açıklama</dt>
+                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Description</dd>
+
+                    <dt class="col-sm-4">Konum</dt>
+                    <dd class="col-sm-8">@(Model.Assignment.HelpRequest?.Location ?? "Belirtilmemiş")</dd>
+
+                    <dt class="col-sm-4">Bölge</dt>
+                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Region?.RegionName</dd>
+
+                    <dt class="col-sm-4">Aciliyet</dt>
+                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Urgency.GetDisplayName()</dd>
+
+                    <dt class="col-sm-4">Talep Eden</dt>
+                    <dd class="col-sm-8">@Model.RequesterFullName</dd>
+
+                    <dt class="col-sm-4">Talep Eden Tel</dt>
+                    <dd class="col-sm-8">@(Model.RequesterPhone ?? "Belirtilmemiş")</dd>
+
+                    <dt class="col-sm-4">Atanma Tarihi</dt>
+                    <dd class="col-sm-8">@Model.Assignment.AssignedDate.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                    @if (Model.Assignment.DeliveryDate.HasValue)
+                    {
+                        <dt class="col-sm-4">Teslim Tarihi</dt>
+                        <dd class="col-sm-8">@Model.Assignment.DeliveryDate.Value.ToString("dd.MM.yyyy HH:mm")</dd>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Assignment.Notes))
+                    {
+                        <dt class="col-sm-4">Notlar</dt>
+                        <dd class="col-sm-8">@Model.Assignment.Notes</dd>
+                    }
+                </dl>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <p class="text-muted">Görev detay sayfası Faz 2'de geliştirilecek.</p>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>İşlemler</h3>
+            </div>
+            <div class="card-body">
+                @if (Model.Assignment.Status == AssignmentStatus.Atandi)
+                {
+                    <form action="/Gonullu/Assignment/Accept/@Model.Assignment.Id" method="post" class="mb-2">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success btn-block">
+                            <i class="fas fa-road mr-1"></i> Yola Çıktım
+                        </button>
+                    </form>
+
+                    <form action="/Gonullu/Assignment/Reject/@Model.Assignment.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger btn-block"
+                                onclick="return confirm('Görevi reddetmek istediğinizden emin misiniz?')">
+                            <i class="fas fa-times mr-1"></i> Görevi Reddet
+                        </button>
+                    </form>
+                }
+                else if (Model.Assignment.Status == AssignmentStatus.Yolda)
+                {
+                    <form action="/Gonullu/Assignment/Complete/@Model.Assignment.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label for="notes">Teslim Notu (İsteğe Bağlı)</label>
+                            <textarea name="notes" id="notes" class="form-control" rows="3"
+                                      placeholder="Teslim ile ilgili notlarınız..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">
+                            <i class="fas fa-check-circle mr-1"></i> Teslim Ettim
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <p class="text-muted text-center">Bu görevde yapılacak işlem yok.</p>
+                }
+
+                <hr />
+                <a href="/Gonullu/Assignment" class="btn btn-outline-secondary btn-block">
+                    <i class="fas fa-arrow-left mr-1"></i> Görevlerime Dön
+                </a>
+            </div>
+        </div>
     </div>
 </div>
