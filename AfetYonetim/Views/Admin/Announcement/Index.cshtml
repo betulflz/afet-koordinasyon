@@ -1,17 +1,83 @@
-@{
-    ViewData["Title"] = "Duyurular";
-}
+@model AnnouncementIndexViewModel
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title"><i class="fas fa-bullhorn mr-2"></i>Duyurular</h3>
-        <div class="card-tools">
-            <a href="/Admin/Announcement/Create" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus mr-1"></i> Yeni Duyuru
-            </a>
-        </div>
+        <a href="/Admin/Announcement/Create" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus mr-1"></i> Yeni Duyuru
+        </a>
     </div>
     <div class="card-body">
-        <p class="text-muted">Duyuru listesi Faz 2'de geliştirilecek.</p>
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Başlık</th>
+                    <th>Acil</th>
+                    <th>Bitiş Tarihi</th>
+                    <th>Oluşturan</th>
+                    <th>Tarih</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Henüz duyuru yok.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Title</td>
+                            <td>
+                                @if (item.IsUrgent)
+                                {
+                                    <span class="badge badge-danger">ACİL</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-secondary">Normal</span>
+                                }
+                            </td>
+                            <td>@(item.ExpiresAt?.ToString("dd.MM.yyyy HH:mm") ?? "Süresiz")</td>
+                            <td>@item.AdminFullName</td>
+                            <td>@item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <a href="/Admin/Announcement/Details/@item.Id" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="/Admin/Announcement/Edit/@item.Id" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="/Admin/Announcement/Delete/@item.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Duyuruyu silmek istediğinizden emin misiniz?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="/Admin/Announcement?page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
     </div>
 </div>

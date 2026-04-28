@@ -1,12 +1,46 @@
-@{
-    ViewData["Title"] = "Duyuru Düzenle";
-}
+@model AnnouncementFormViewModel
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Duyuru Düzenle</h3>
-    </div>
-    <div class="card-body">
-        <p class="text-muted">Duyuru düzenleme formu Faz 2'de geliştirilecek.</p>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Duyuru Düzenle</h3>
+            </div>
+            <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="Title"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Content"></label>
+                        <textarea asp-for="Content" class="form-control" rows="6"></textarea>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input asp-for="IsUrgent" class="custom-control-input" id="isUrgent" />
+                            <label class="custom-control-label" for="isUrgent">Acil Duyuru</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ExpiresAt"></label>
+                        <input asp-for="ExpiresAt" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="ExpiresAt" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> Güncelle
+                    </button>
+                    <a href="/Admin/Announcement" class="btn btn-secondary ml-2">İptal</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

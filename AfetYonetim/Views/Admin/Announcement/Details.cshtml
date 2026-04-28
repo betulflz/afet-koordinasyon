@@ -1,12 +1,37 @@
-@{
-    ViewData["Title"] = "Duyuru Detayı";
-}
+@model Announcement
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Duyuru Detayı</h3>
-    </div>
-    <div class="card-body">
-        <p class="text-muted">Duyuru detay sayfası Faz 2'de geliştirilecek.</p>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-bullhorn mr-2"></i>@Model.Title</h3>
+                @if (Model.IsUrgent)
+                {
+                    <span class="badge badge-danger ml-2">ACİL</span>
+                }
+            </div>
+            <div class="card-body">
+                <p>@Model.Content</p>
+                <hr />
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Oluşturan</dt>
+                    <dd class="col-sm-8">@Model.CreatedByAdmin?.FullName</dd>
+
+                    <dt class="col-sm-4">Oluşturulma Tarihi</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4">Bitiş Tarihi</dt>
+                    <dd class="col-sm-8">@(Model.ExpiresAt?.ToString("dd.MM.yyyy HH:mm") ?? "Süresiz")</dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a href="/Admin/Announcement/Edit/@Model.Id" class="btn btn-warning">
+                    <i class="fas fa-edit mr-1"></i> Düzenle
+                </a>
+                <a href="/Admin/Announcement" class="btn btn-secondary ml-2">
+                    <i class="fas fa-arrow-left mr-1"></i> Listeye Dön
+                </a>
+            </div>
+        </div>
     </div>
 </div>
