@@ -1,12 +1,43 @@
-@{
-    ViewData["Title"] = "Duyurular";
-}
+@model List<Announcement>
 
 <div class="card">
     <div class="card-header">
         <h3 class="card-title"><i class="fas fa-bullhorn mr-2"></i>Duyurular</h3>
     </div>
     <div class="card-body">
-        <p class="text-muted">Duyuru listesi Faz 2'de geliştirilecek.</p>
+        @if (Model.Count == 0)
+        {
+            <p class="text-muted text-center">Henüz duyuru yok.</p>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                var now = DateTime.UtcNow;
+                bool isExpired = item.ExpiresAt.HasValue && item.ExpiresAt.Value < now;
+
+                <div class="callout @(item.IsUrgent ? "callout-danger" : isExpired ? "callout-secondary" : "callout-info")">
+                    <h5>
+                        @item.Title
+                        @if (item.IsUrgent)
+                        {
+                            <span class="badge badge-danger ml-2">ACİL</span>
+                        }
+                        @if (isExpired)
+                        {
+                            <span class="badge badge-secondary ml-2">Süresi Dolmuş</span>
+                        }
+                    </h5>
+                    <p>@item.Content</p>
+                    <small class="text-muted">
+                        @item.CreatedByAdmin?.FullName — @item.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                        @if (item.ExpiresAt.HasValue)
+                        {
+                            <text> | Bitiş: @item.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm")</text>
+                        }
+                    </small>
+                </div>
+            }
+        }
     </div>
 </div>

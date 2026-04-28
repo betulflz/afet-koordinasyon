@@ -1,12 +1,56 @@
-@{
-    ViewData["Title"] = "Profilim";
-}
+@model AfetYonetim.Models.ViewModels.Gonullu.ProfileViewModel
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-user-cog mr-2"></i>Profil Bilgilerim</h3>
-    </div>
-    <div class="card-body">
-        <p class="text-muted">Profil sayfası Faz 2'de geliştirilecek.</p>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-user-cog mr-2"></i>Profil Bilgilerim</h3>
+            </div>
+            <form asp-action="Update" method="post">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="text" class="form-control" value="@Model.Email" readonly disabled />
+                        <small class="form-text text-muted">E-posta adresi değiştirilemez.</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Name"></label>
+                                <input asp-for="Name" class="form-control" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Surname"></label>
+                                <input asp-for="Surname" class="form-control" />
+                                <span asp-validation-for="Surname" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PhoneNumber"></label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="05XX XXX XX XX" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="RegionId"></label>
+                        <select asp-for="RegionId" class="form-control" asp-items="Model.RegionList">
+                            <option value="">-- Bölge Seçiniz (İsteğe Bağlı) --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
