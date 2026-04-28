@@ -1,17 +1,91 @@
+@model RegionIndexViewModel
+
 @{
-    ViewData["Title"] = "Bölge Yönetimi";
+    string RiskBadge(RiskLevel r) => r switch
+    {
+        RiskLevel.Dusuk => "badge-success",
+        RiskLevel.Orta => "badge-warning",
+        RiskLevel.Yuksek => "badge-danger",
+        RiskLevel.Kritik => "badge-dark",
+        _ => "badge-secondary"
+    };
 }
 
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-map-marked-alt mr-2"></i>Bölgeler</h3>
-        <div class="card-tools">
-            <a href="/Admin/Region/Create" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus mr-1"></i> Yeni Bölge
-            </a>
-        </div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title"><i class="fas fa-map-marked-alt mr-2"></i>Bölge Yönetimi</h3>
+        <a href="/Admin/Region/Create" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus mr-1"></i> Yeni Bölge
+        </a>
     </div>
     <div class="card-body">
-        <p class="text-muted">Bölge listesi Faz 2'de geliştirilecek.</p>
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Bölge Adı</th>
+                    <th>İl</th>
+                    <th>İlçe</th>
+                    <th>Risk Seviyesi</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Bölge bulunamadı.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.RegionName</td>
+                            <td>@item.City</td>
+                            <td>@(item.District ?? "-")</td>
+                            <td><span class="badge @RiskBadge(item.RiskLevel)">@item.RiskLevel.GetDisplayName()</span></td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-secondary">Pasif</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="/Admin/Region/Edit/@item.Id" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="/Admin/Region/Delete/@item.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Bölgeyi silmek istediğinizden emin misiniz?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="/Admin/Region?page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
     </div>
 </div>
