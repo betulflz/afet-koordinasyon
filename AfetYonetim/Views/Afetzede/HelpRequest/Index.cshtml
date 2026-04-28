@@ -1,17 +1,77 @@
+@model AfetYonetim.Models.ViewModels.Afetzede.HelpRequestListViewModel
+
 @{
-    ViewData["Title"] = "Taleplerim";
+    string StatusBadge(RequestStatus s) => s switch
+    {
+        RequestStatus.Bekliyor => "badge-warning",
+        RequestStatus.Onaylandi => "badge-info",
+        RequestStatus.Atandi => "badge-primary",
+        RequestStatus.Yolda => "badge-secondary",
+        RequestStatus.TeslimEdildi => "badge-success",
+        RequestStatus.Reddedildi => "badge-danger",
+        _ => "badge-dark"
+    };
 }
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title"><i class="fas fa-list mr-2"></i>Taleplerim</h3>
-        <div class="card-tools">
-            <a href="/Afetzede/HelpRequest/Create" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus mr-1"></i> Yeni Talep
-            </a>
-        </div>
+        <a href="/Afetzede/HelpRequest/Create" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus mr-1"></i> Yeni Talep
+        </a>
     </div>
     <div class="card-body">
-        <p class="text-muted">Talep listesi Faz 2'de geliştirilecek.</p>
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Kategori</th>
+                    <th>Aciliyet</th>
+                    <th>Durum</th>
+                    <th>Konum</th>
+                    <th>Tarih</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Henüz talebiniz yok.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Category.GetDisplayName()</td>
+                            <td>@item.Urgency.GetDisplayName()</td>
+                            <td><span class="badge @StatusBadge(item.Status)">@item.Status.GetDisplayName()</span></td>
+                            <td>@(item.Location ?? "-")</td>
+                            <td>@item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <a href="/Afetzede/HelpRequest/Details/@item.Id" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="/Afetzede/HelpRequest?page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
     </div>
 </div>

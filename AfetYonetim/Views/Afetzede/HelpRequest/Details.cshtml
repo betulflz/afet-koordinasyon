@@ -1,12 +1,124 @@
+@model HelpRequest
+
 @{
-    ViewData["Title"] = "Talep Detayı";
+    string StatusBadge(RequestStatus s) => s switch
+    {
+        RequestStatus.Bekliyor => "badge-warning",
+        RequestStatus.Onaylandi => "badge-info",
+        RequestStatus.Atandi => "badge-primary",
+        RequestStatus.Yolda => "badge-secondary",
+        RequestStatus.TeslimEdildi => "badge-success",
+        RequestStatus.Reddedildi => "badge-danger",
+        _ => "badge-dark"
+    };
+
+    // Timeline için durum adımları (reddedildi hariç)
+    var timelineSteps = new[] {
+        RequestStatus.Bekliyor,
+        RequestStatus.Onaylandi,
+        RequestStatus.Atandi,
+        RequestStatus.Yolda,
+        RequestStatus.TeslimEdildi
+    };
+}
+
+@if (Model.Status != RequestStatus.Reddedildi)
+{
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-route mr-2"></i>Talep Durumu</h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                @for (int i = 0; i < timelineSteps.Length; i++)
+                {
+                    bool isPast = (int)Model.Status >= (int)timelineSteps[i];
+                    bool isCurrent = Model.Status == timelineSteps[i];
+                    string bgClass = isCurrent ? "bg-primary text-white" : isPast ? "bg-success text-white" : "bg-light text-muted";
+
+                    <div class="text-center flex-fill">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center @bgClass"
+                             style="width:40px; height:40px; font-weight:bold;">
+                            @(i + 1)
+                        </div>
+                        <div class="small mt-1">@timelineSteps[i].GetDisplayName()</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-times-circle mr-2"></i>
+        Bu talep reddedilmiştir.
+    </div>
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Talep Detayı</h3>
+        <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Talep Bilgileri</h3>
     </div>
     <div class="card-body">
-        <p class="text-muted">Talep detay sayfası Faz 2'de geliştirilecek.</p>
+        <dl class="row">
+            <dt class="col-sm-4">Kategori</dt>
+            <dd class="col-sm-8">@Model.Category.GetDisplayName()</dd>
+
+            <dt class="col-sm-4">Açıklama</dt>
+            <dd class="col-sm-8">@Model.Description</dd>
+
+            <dt class="col-sm-4">Konum</dt>
+            <dd class="col-sm-8">@(Model.Location ?? "Belirtilmemiş")</dd>
+
+            <dt class="col-sm-4">Bölge</dt>
+            <dd class="col-sm-8">@Model.Region?.RegionName</dd>
+
+            <dt class="col-sm-4">Aciliyet</dt>
+            <dd class="col-sm-8">@Model.Urgency.GetDisplayName()</dd>
+
+            <dt class="col-sm-4">Durum</dt>
+            <dd class="col-sm-8">
+                <span class="badge @StatusBadge(Model.Status) p-2">@Model.Status.GetDisplayName()</span>
+            </dd>
+
+            <dt class="col-sm-4">Oluşturulma</dt>
+            <dd class="col-sm-8">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+        </dl>
     </div>
 </div>
+
+@{
+    var activeAssignment = Model.Assignments?
+        .Where(a => a.Status != AssignmentStatus.Iptal)
+        .OrderByDescending(a => a.AssignedDate)
+        .FirstOrDefault();
+}
+
+@if (activeAssignment != null)
+{
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-user-check mr-2"></i>Atanan Gönüllü</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Gönüllü</dt>
+                <dd class="col-sm-8">@activeAssignment.Volunteer?.FullName</dd>
+
+                <dt class="col-sm-4">Atanma Tarihi</dt>
+                <dd class="col-sm-8">@activeAssignment.AssignedDate.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                @if (activeAssignment.DeliveryDate.HasValue)
+                {
+                    <dt class="col-sm-4">Teslim Tarihi</dt>
+                    <dd class="col-sm-8">@activeAssignment.DeliveryDate.Value.ToString("dd.MM.yyyy HH:mm")</dd>
+                }
+            </dl>
+        </div>
+    </div>
+}
+
+<a href="/Afetzede/HelpRequest" class="btn btn-secondary">
+    <i class="fas fa-arrow-left mr-1"></i> Taleplerime Dön
+</a>

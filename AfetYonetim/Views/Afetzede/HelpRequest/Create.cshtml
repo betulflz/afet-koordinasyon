@@ -1,12 +1,58 @@
-@{
-    ViewData["Title"] = "Yeni Talep Oluştur";
-}
+@model AfetYonetim.Models.ViewModels.Afetzede.HelpRequestCreateViewModel
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-plus-circle mr-2"></i>Yeni Yardım Talebi</h3>
-    </div>
-    <div class="card-body">
-        <p class="text-muted">Talep oluşturma formu Faz 2'de geliştirilecek.</p>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-plus-circle mr-2"></i>Yeni Yardım Talebi</h3>
+            </div>
+            <form asp-action="Create" method="post">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="Category"></label>
+                        <select asp-for="Category" class="form-control"
+                                asp-items="Html.GetEnumSelectList<HelpCategory>()">
+                            <option value="">-- Kategori Seçiniz --</option>
+                        </select>
+                        <span asp-validation-for="Category" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Description"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="İhtiyacınızı detaylıca açıklayınız..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Location"></label>
+                        <input asp-for="Location" class="form-control" placeholder="Örn: Hatay, Antakya, Cumhuriyet Mah." />
+                        <span asp-validation-for="Location" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="RegionId"></label>
+                        <select asp-for="RegionId" class="form-control" asp-items="Model.RegionList">
+                            <option value="">-- Bölge Seçiniz --</option>
+                        </select>
+                        <span asp-validation-for="RegionId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Urgency"></label>
+                        <select asp-for="Urgency" class="form-control"
+                                asp-items="Html.GetEnumSelectList<UrgencyLevel>()">
+                        </select>
+                        <span asp-validation-for="Urgency" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane mr-1"></i> Talebi Gönder
+                    </button>
+                    <a href="/Afetzede/HelpRequest" class="btn btn-secondary ml-2">İptal</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
