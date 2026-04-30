@@ -27,6 +27,13 @@ namespace AfetYonetim.Models.ViewModels.Afetzede
         [Display(Name = "Aciliyet")]
         public UrgencyLevel Urgency { get; set; } = UrgencyLevel.Orta;
 
+        // Faz 3: Haritadan seçilen koordinat (opsiyonel — null ise Region koordinatı kullanılır)
+        [Display(Name = "Enlem")]
+        public double? Latitude { get; set; }
+
+        [Display(Name = "Boylam")]
+        public double? Longitude { get; set; }
+
         // Dropdown için
         public List<SelectListItem> RegionList { get; set; } = new();
     }

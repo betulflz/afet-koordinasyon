@@ -1,4 +1,5 @@
 using AfetYonetim.Models.Enums;
+using AfetYonetim.Models.ViewModels.Admin.Shared;
 
 namespace AfetYonetim.Models.ViewModels.Admin
 {
@@ -7,6 +8,9 @@ namespace AfetYonetim.Models.ViewModels.Admin
         public List<RegionListItem> Items { get; set; } = new();
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
+
+        // Faz 3 yeni alan — risk haritası için
+        public List<RegionMapPin> RiskMapPins { get; set; } = new();
     }
 
     public class RegionListItem
