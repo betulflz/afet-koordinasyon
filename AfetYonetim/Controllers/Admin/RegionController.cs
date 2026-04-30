@@ -45,16 +45,28 @@ namespace AfetYonetim.Controllers.Admin
                 })
                 .ToListAsync();
 
+            // Faz 3: Sadece aktif bölgeleri harita için çek
+            var riskPins = await _context.Regions
+                .Where(r => r.IsActive)
+                .Select(r => new AfetYonetim.Models.ViewModels.Admin.Shared.RegionMapPin
+                {
+                    Name = r.RegionName + " (" + r.City + ")",
+                    Lat = r.Latitude,
+                    Lng = r.Longitude,
+                    RiskLevel = r.RiskLevel.ToString()
+                })
+                .ToListAsync();
+
             var model = new RegionIndexViewModel
             {
                 Items = items,
                 CurrentPage = pageNumber,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                RiskMapPins = riskPins // Çantaya ekledik!
             };
 
             return View("~/Views/Admin/Region/Index.cshtml", model);
         }
-
         [HttpGet("Create")]
         public IActionResult Create()
         {
