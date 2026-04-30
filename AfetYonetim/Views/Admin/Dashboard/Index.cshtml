@@ -1,55 +1,72 @@
 @model DashboardViewModel
+@using System.Text.Json
 
+@{
+    string ActivityTime(DateTime when)
+    {
+        var diff = DateTime.UtcNow - when;
+        if (diff.TotalMinutes < 1) return "az önce";
+        if (diff.TotalMinutes < 60) return ((int)diff.TotalMinutes) + " dk önce";
+        if (diff.TotalHours < 24) return ((int)diff.TotalHours) + " saat önce";
+        return ((int)diff.TotalDays) + " gün önce";
+    }
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        #dashboardMap { height: 430px; position: relative; z-index: 1; border-radius: 4px; }
+        .map-filter-bar { display:flex; gap:10px; flex-wrap:wrap; padding:8px 12px; background:#f4f6f9; border-bottom:1px solid #dee2e6; font-size:12px; }
+        .map-filter-bar label { margin:0; cursor:pointer; padding:3px 8px; border-radius:4px; background:#fff; border:1px solid #ced4da; }
+        .map-filter-bar label.on { background:#e7f3ff; border-color:#80bdff; color:#0050b3; font-weight:600; }
+        .map-filter-bar input { margin-right:4px; }
+        .map-legend { padding:8px 12px; background:#fafbfc; border-top:1px solid #e9ecef; display:flex; gap:18px; font-size:12px; flex-wrap:wrap; }
+        .map-legend .dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+        .chart-mini { height: 160px; }
+        .timeline-mini .item { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid #f1f3f5; align-items:flex-start; }
+        .timeline-mini .item:last-child { border-bottom:none; }
+        .timeline-mini .ic { width:32px; height:32px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .timeline-mini .ttl { font-weight:600; color:#222; font-size:13px; }
+        .timeline-mini .sub { color:#666; font-size:12px; }
+        .timeline-mini .when { color:#999; font-size:11px; margin-left:auto; }
+        .coord-info { background:#e7f3ff; border:1px solid #b3d7ff; border-radius:4px; padding:6px 10px; font-size:12px; color:#0050b3; margin-top:6px; }
+    </style>
+}
+
+<!-- =================== Sayaçlar (mevcut, değişmedi) =================== -->
 <div class="row">
     <div class="col-lg-3 col-6">
         <div class="small-box bg-info">
-            <div class="inner">
-                <h3>@Model.TotalRequests</h3>
-                <p>Toplam Talep</p>
-            </div>
+            <div class="inner"><h3>@Model.TotalRequests</h3><p>Toplam Talep</p></div>
             <div class="icon"><i class="fas fa-hand-holding-heart"></i></div>
-            <a href="/Admin/HelpRequest" class="small-box-footer">
-                Tümünü Gör <i class="fas fa-arrow-circle-right"></i>
-            </a>
+            <a href="/Admin/HelpRequest" class="small-box-footer">Tümünü Gör <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
 
     <div class="col-lg-3 col-6">
         <div class="small-box bg-warning">
-            <div class="inner">
-                <h3>@Model.PendingRequests</h3>
-                <p>Bekleyen Talep</p>
-            </div>
+            <div class="inner"><h3>@Model.PendingRequests</h3><p>Bekleyen Talep</p></div>
             <div class="icon"><i class="fas fa-clock"></i></div>
-            <a href="/Admin/HelpRequest?status=Bekliyor" class="small-box-footer">
-                Bekleyenleri Gör <i class="fas fa-arrow-circle-right"></i>
-            </a>
+            <a href="/Admin/HelpRequest?status=Bekliyor" class="small-box-footer">Bekleyenleri Gör <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
 
     <div class="col-lg-3 col-6">
         <div class="small-box bg-success">
-            <div class="inner">
-                <h3>@Model.CompletedRequests</h3>
-                <p>Teslim Edilen</p>
-            </div>
+            <div class="inner"><h3>@Model.CompletedRequests</h3><p>Teslim Edilen</p></div>
             <div class="icon"><i class="fas fa-check-circle"></i></div>
-            <a href="/Admin/HelpRequest?status=TeslimEdildi" class="small-box-footer">
-                Detay <i class="fas fa-arrow-circle-right"></i>
-            </a>
+            <a href="/Admin/HelpRequest?status=TeslimEdildi" class="small-box-footer">Detay <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
 
     <div class="col-lg-3 col-6">
         <div class="small-box bg-primary">
-            <div class="inner">
-                <h3>@Model.ActiveAssignments</h3>
-                <p>Aktif Görevlendirme</p>
-            </div>
+            <div class="inner"><h3>@Model.ActiveAssignments</h3><p>Aktif Görevlendirme</p></div>
             <div class="icon"><i class="fas fa-tasks"></i></div>
-            <a href="/Admin/Assignment" class="small-box-footer">
-                Görevlendirmeler <i class="fas fa-arrow-circle-right"></i>
-            </a>
+            <a href="/Admin/Assignment" class="small-box-footer">Görevlendirmeler <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
 </div>
@@ -92,3 +109,122 @@
         </div>
     </div>
 </div>
+
+<!-- =================== Harita + 3 Grafik =================== -->
+<div class="row">
+    <!-- Sol: Harita -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-map-marker-alt mr-2"></i>Aktif Talep Haritası</h3>
+                <span class="float-right text-muted small" id="mapCount"></span>
+            </div>
+            <div class="map-filter-bar">
+                <strong>Filtre:</strong>
+                <label class="on"><input type="checkbox" class="pin-filter" value="Bekliyor" checked> Bekleyen</label>
+                <label class="on"><input type="checkbox" class="pin-filter" value="Onaylandi" checked> Onaylanan</label>
+                <label class="on"><input type="checkbox" class="pin-filter" value="Atandi" checked> Atanan</label>
+                <label class="on"><input type="checkbox" class="pin-filter" value="Yolda" checked> Yolda</label>
+            </div>
+            <div id="dashboardMap"></div>
+            <div class="map-legend">
+                <span><span class="dot" style="background:#dc3545"></span>Yüksek Aciliyet</span>
+                <span><span class="dot" style="background:#ffc107"></span>Orta Aciliyet</span>
+                <span><span class="dot" style="background:#28a745"></span>Düşük Aciliyet</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sağ: 3 Grafik -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-pie mr-2"></i>Kategori Dağılımı</h3></div>
+            <div class="card-body"><div class="chart-mini"><canvas id="categoryChart"></canvas></div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-line mr-2"></i>Son 7 Gün Talep Trendi</h3></div>
+            <div class="card-body"><div class="chart-mini"><canvas id="trendChart"></canvas></div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-bar mr-2"></i>Bölge Bazlı Talep</h3></div>
+            <div class="card-body"><div class="chart-mini"><canvas id="regionChart"></canvas></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- =================== Son İşlemler Timeline =================== -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Son İşlemler</h3></div>
+            <div class="card-body timeline-mini">
+                @if (!Model.RecentActivities.Any())
+                {
+                    <p class="text-muted text-center mb-0">Henüz aktivite yok.</p>
+                }
+                else
+                {
+                    @foreach (var a in Model.RecentActivities)
+                    {
+                        <div class="item">
+                            <div class="ic @a.ColorClass"><i class="@a.IconClass"></i></div>
+                            <div>
+                                <div class="ttl">@a.Title</div>
+                                <div class="sub">@a.Subtitle</div>
+                            </div>
+                            <div class="when">@ActivityTime(a.When)</div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="~/js/site-maps.js"></script>
+    <script src="~/js/site-charts.js"></script>
+    <script>
+        const dashboardPins = @Html.Raw(JsonSerializer.Serialize(Model.ActivePins, jsonOpts));
+        const categoryStats = @Html.Raw(JsonSerializer.Serialize(Model.CategoryStats, jsonOpts));
+        const dailyTrend    = @Html.Raw(JsonSerializer.Serialize(Model.DailyTrend, jsonOpts));
+        const regionStats   = @Html.Raw(JsonSerializer.Serialize(Model.RegionStats, jsonOpts));
+
+        // === Harita ===
+        const map = SiteMaps.initMap('dashboardMap', { center: [37.5, 37.0], zoom: 7 });
+        const markers = dashboardPins.map(function (p) { return SiteMaps.addPinToMap(map, p); });
+
+        function updateMapCount() {
+            const visible = markers.filter(function (m) { return map.hasLayer(m); }).length;
+            document.getElementById('mapCount').textContent =
+                visible + ' / ' + markers.length + ' talep gösteriliyor';
+        }
+        updateMapCount();
+
+        // Filtre toggling
+        document.querySelectorAll('.pin-filter').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                const enabled = new Set();
+                document.querySelectorAll('.pin-filter:checked').forEach(function (c) { enabled.add(c.value); });
+                markers.forEach(function (m) {
+                    if (enabled.has(m.options.statusKey)) { if (!map.hasLayer(m)) m.addTo(map); }
+                    else { if (map.hasLayer(m)) map.removeLayer(m); }
+                });
+                document.querySelectorAll('.pin-filter').forEach(function (c) {
+                    c.parentElement.classList.toggle('on', c.checked);
+                });
+                updateMapCount();
+            });
+        });
+
+        // === Grafikler ===
+        SiteCharts.categoryDoughnut('categoryChart', categoryStats);
+        SiteCharts.dailyTrendLine('trendChart', dailyTrend);
+        SiteCharts.regionBar('regionChart', regionStats);
+    </script>
+}
