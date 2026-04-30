@@ -9,11 +9,25 @@
         AssignmentStatus.Iptal => "badge-dark",
         _ => "badge-dark"
     };
+
+    var hr = Model.Assignment.HelpRequest;
+    var lat = (hr?.Latitude ?? 0) == 0 ? (hr?.Region?.Latitude ?? 39.0) : hr!.Latitude;
+    var lng = (hr?.Longitude ?? 0) == 0 ? (hr?.Region?.Longitude ?? 35.0) : hr!.Longitude;
+    var urgency = hr?.Urgency.ToString() ?? "Orta";
+    var locationLabel = hr?.Location ?? hr?.Region?.RegionName ?? "";
+    var directionsUrl = $"https://www.google.com/maps/dir/?api=1&destination={lat.ToString(System.Globalization.CultureInfo.InvariantCulture)},{lng.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+    var coordsText = $"{lat.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)},{lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)}";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style> #assignmentMap { height: 240px; position: relative; z-index: 1; border-radius: 4px; } </style>
 }
 
 <div class="row">
     <div class="col-md-8">
-        <div class="card">
+        <div class="card card-outline card-primary shadow-sm">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-clipboard-check mr-2"></i>Görev Bilgileri</h3>
                 <span class="badge @AssignBadge(Model.Assignment.Status) float-right p-2">
@@ -23,19 +37,19 @@
             <div class="card-body">
                 <dl class="row">
                     <dt class="col-sm-4">Kategori</dt>
-                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Category.GetDisplayName()</dd>
+                    <dd class="col-sm-8">@hr?.Category.GetDisplayName()</dd>
 
                     <dt class="col-sm-4">Açıklama</dt>
-                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Description</dd>
+                    <dd class="col-sm-8">@hr?.Description</dd>
 
                     <dt class="col-sm-4">Konum</dt>
-                    <dd class="col-sm-8">@(Model.Assignment.HelpRequest?.Location ?? "Belirtilmemiş")</dd>
+                    <dd class="col-sm-8">@(hr?.Location ?? "Belirtilmemiş")</dd>
 
                     <dt class="col-sm-4">Bölge</dt>
-                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Region?.RegionName</dd>
+                    <dd class="col-sm-8">@hr?.Region?.RegionName</dd>
 
                     <dt class="col-sm-4">Aciliyet</dt>
-                    <dd class="col-sm-8">@Model.Assignment.HelpRequest?.Urgency.GetDisplayName()</dd>
+                    <dd class="col-sm-8">@hr?.Urgency.GetDisplayName()</dd>
 
                     <dt class="col-sm-4">Talep Eden</dt>
                     <dd class="col-sm-8">@Model.RequesterFullName</dd>
@@ -55,15 +69,35 @@
                     @if (!string.IsNullOrWhiteSpace(Model.Assignment.Notes))
                     {
                         <dt class="col-sm-4">Notlar</dt>
-                        <dd class="col-sm-8">@Model.Assignment.Notes</dd>
+                        <dd class="col-sm-8 text-danger font-weight-bold">@Model.Assignment.Notes</dd>
                     }
                 </dl>
+            </div>
+        </div>
+
+        <!-- Faz 3: Harita + Yol Tarifi -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-map-marker-alt mr-2 text-danger"></i>Talep Konumu</h3>
+                <span class="float-right text-muted small mt-1">@lat.ToString("F4"), @lng.ToString("F4")</span>
+            </div>
+            <div class="card-body p-0">
+                 <div id="assignmentMap"></div>
+            </div>
+            <div class="card-footer d-flex" style="gap:10px;">
+                <a href="@directionsUrl" target="_blank" rel="noopener" class="btn btn-info flex-grow-1 font-weight-bold">
+                    <i class="fas fa-route mr-2"></i> Google Maps'te Yol Tarifi Al
+                </a>
+                <button type="button" class="btn btn-outline-secondary"
+                        onclick="SiteMaps.copyCoords('@coordsText')">
+                    <i class="fas fa-copy mr-1"></i> Kopyala
+                </button>
             </div>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card">
+        <div class="card card-secondary shadow-sm">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>İşlemler</h3>
             </div>
@@ -73,7 +107,7 @@
                     <form action="/Gonullu/Assignment/Accept/@Model.Assignment.Id" method="post" class="mb-2">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-success btn-block">
-                            <i class="fas fa-road mr-1"></i> Yola Çıktım
+                            <i class="fas fa-road mr-2"></i> Yola Çıktım
                         </button>
                     </form>
 
@@ -81,7 +115,7 @@
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-danger btn-block"
                                 onclick="return confirm('Görevi reddetmek istediğinizden emin misiniz?')">
-                            <i class="fas fa-times mr-1"></i> Görevi Reddet
+                            <i class="fas fa-times mr-2"></i> Görevi Reddet
                         </button>
                     </form>
                 }
@@ -95,7 +129,7 @@
                                       placeholder="Teslim ile ilgili notlarınız..."></textarea>
                         </div>
                         <button type="submit" class="btn btn-success btn-block">
-                            <i class="fas fa-check-circle mr-1"></i> Teslim Ettim
+                            <i class="fas fa-check-circle mr-2"></i> Teslim Ettim
                         </button>
                     </form>
                 }
@@ -106,9 +140,29 @@
 
                 <hr />
                 <a href="/Gonullu/Assignment" class="btn btn-outline-secondary btn-block">
-                    <i class="fas fa-arrow-left mr-1"></i> Görevlerime Dön
+                    <i class="fas fa-arrow-left mr-2"></i> Görevlerime Dön
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="~/js/site-maps.js"></script>
+    <script>
+        const aLat = @lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const aLng = @lng.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const aMap = SiteMaps.initMap('assignmentMap', { center: [aLat, aLng], zoom: 13, scrollWheelZoom: false });
+        const aPin = {
+            lat: aLat, lng: aLng,
+            title: '@Html.Raw(hr?.Category.GetDisplayName())' + ' Talebi',
+            status: '@(hr?.Status.ToString())',
+            urgency: '@urgency',
+            subtitle: '@Html.Raw(locationLabel)',
+            detailUrl: ''
+        };
+        SiteMaps.addPinToMap(aMap, aPin);
+    </script>
+}
