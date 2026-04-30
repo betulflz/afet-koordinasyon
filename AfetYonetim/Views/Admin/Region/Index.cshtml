@@ -1,4 +1,5 @@
 @model RegionIndexViewModel
+@using System.Text.Json
 
 @{
     string RiskBadge(RiskLevel r) => r switch
@@ -9,54 +10,58 @@
         RiskLevel.Kritik => "badge-dark",
         _ => "badge-secondary"
     };
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 }
 
-<div class="card">
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        #riskMap { height: 320px; position: relative; z-index: 1; border-radius: 4px; }
+        .risk-dot { display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+    </style>
+}
+
+<div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title"><i class="fas fa-map-marked-alt mr-2"></i>Bölge Yönetimi</h3>
         <a href="/Admin/Region/Create" class="btn btn-sm btn-primary">
             <i class="fas fa-plus mr-1"></i> Yeni Bölge
         </a>
     </div>
-    <div class="card-body">
-        <table class="table table-bordered table-hover table-striped">
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover table-striped m-0">
             <thead class="thead-dark">
                 <tr>
-                    <th>Bölge Adı</th>
-                    <th>İl</th>
-                    <th>İlçe</th>
-                    <th>Risk Seviyesi</th>
-                    <th>Durum</th>
-                    <th>İşlem</th>
+                    <th>Bölge Adı</th><th>İl</th><th>İlçe</th><th>Risk Seviyesi</th><th>Durum</th><th>İşlem</th>
                 </tr>
             </thead>
             <tbody>
                 @if (Model.Items.Count == 0)
                 {
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">Bölge bulunamadı.</td>
-                    </tr>
+                    <tr><td colspan="6" class="text-center text-muted p-4">Bölge bulunamadı.</td></tr>
                 }
                 else
                 {
                     @foreach (var item in Model.Items)
                     {
                         <tr>
-                            <td>@item.RegionName</td>
-                            <td>@item.City</td>
-                            <td>@(item.District ?? "-")</td>
-                            <td><span class="badge @RiskBadge(item.RiskLevel)">@item.RiskLevel.GetDisplayName()</span></td>
-                            <td>
+                            <td class="align-middle">@item.RegionName</td>
+                            <td class="align-middle">@item.City</td>
+                            <td class="align-middle">@(item.District ?? "-")</td>
+                            <td class="align-middle"><span class="badge @RiskBadge(item.RiskLevel) p-2">@item.RiskLevel.GetDisplayName()</span></td>
+                            <td class="align-middle">
                                 @if (item.IsActive)
                                 {
-                                    <span class="badge badge-success">Aktif</span>
+                                    <span class="badge badge-success p-2">Aktif</span>
                                 }
                                 else
                                 {
-                                    <span class="badge badge-secondary">Pasif</span>
+                                    <span class="badge badge-secondary p-2">Pasif</span>
                                 }
                             </td>
-                            <td>
+                            <td class="align-middle">
                                 <a href="/Admin/Region/Edit/@item.Id" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
@@ -76,16 +81,61 @@
 
         @if (Model.TotalPages > 1)
         {
-            <nav>
-                <ul class="pagination justify-content-center mt-3">
-                    @for (int i = 1; i <= Model.TotalPages; i++)
-                    {
-                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="/Admin/Region?page=@i">@i</a>
-                        </li>
-                    }
-                </ul>
-            </nav>
+            <div class="p-3">
+                <nav>
+                    <ul class="pagination justify-content-center m-0">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="/Admin/Region?page=@i">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
         }
     </div>
 </div>
+
+<!-- Faz 3: Risk Haritası -->
+<div class="card mt-4 shadow-sm">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-fire mr-2 text-danger"></i>Bölge Risk Haritası</h3>
+        <small class="float-right text-muted mt-1">Daire büyüklüğü = risk seviyesi</small>
+    </div>
+    <div class="card-body p-0">
+        <div id="riskMap"></div>
+    </div>
+    <div class="card-footer d-flex bg-light" style="gap:18px; font-size:13px; flex-wrap:wrap; font-weight: 500;">
+        <span><span class="risk-dot" style="background:#212529"></span>Kritik</span>
+        <span><span class="risk-dot" style="background:#dc3545"></span>Yüksek</span>
+        <span><span class="risk-dot" style="background:#ffc107"></span>Orta</span>
+        <span><span class="risk-dot" style="background:#28a745"></span>Düşük</span>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="~/js/site-maps.js"></script>
+    <script>
+        const riskPins = @Html.Raw(JsonSerializer.Serialize(Model.RiskMapPins, jsonOpts));
+        const riskMap = SiteMaps.initMap('riskMap', { center: [37.5, 37.0], zoom: 6 });
+
+        riskPins.forEach(function (p) {
+            const color = SiteMaps.RISK_COLORS[p.riskLevel] || '#6c757d';
+            const radius = SiteMaps.RISK_RADIUS[p.riskLevel] || 12;
+            const popup = L.DomUtil.create('div');
+            popup.appendChild(Object.assign(document.createElement('strong'), { textContent: p.name }));
+            popup.appendChild(document.createElement('br'));
+            popup.appendChild(document.createTextNode('Risk: ' + p.riskLevel));
+            L.circleMarker([p.lat, p.lng], {
+                radius: radius,
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.4,
+                weight: 2
+            }).addTo(riskMap).bindPopup(popup);
+        });
+    </script>
+}
