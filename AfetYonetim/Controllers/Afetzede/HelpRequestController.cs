@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace AfetYonetim.Controllers.Afetzede
 {
@@ -70,6 +71,9 @@ namespace AfetYonetim.Controllers.Afetzede
                 RegionList = await GetRegionSelectList()
             };
 
+            // Faz 3: Bölgelerin koordinatlarını JSON olarak ön yüze yolla
+            ViewBag.RegionCoords = await BuildRegionCoordsJson();
+
             return View("~/Views/Afetzede/HelpRequest/Create.cshtml", model);
         }
 
@@ -81,10 +85,32 @@ namespace AfetYonetim.Controllers.Afetzede
             {
                 ViewData["Title"] = "Yeni Talep Oluştur";
                 model.RegionList = await GetRegionSelectList();
+                ViewBag.RegionCoords = await BuildRegionCoordsJson();
                 return View("~/Views/Afetzede/HelpRequest/Create.cshtml", model);
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+            // Faz 3: Lat/Long fallback — haritadan geldiyse onu, yoksa Region'ın koordinatını kullan
+            double finalLat, finalLng;
+            if (model.Latitude.HasValue && model.Longitude.HasValue)
+            {
+                finalLat = model.Latitude.Value;
+                finalLng = model.Longitude.Value;
+            }
+            else
+            {
+                var region = await _context.Regions.FindAsync(model.RegionId);
+                if (region == null)
+                {
+                    ModelState.AddModelError(nameof(model.RegionId), "Geçersiz bölge seçimi.");
+                    model.RegionList = await GetRegionSelectList();
+                    ViewBag.RegionCoords = await BuildRegionCoordsJson();
+                    return View("~/Views/Afetzede/HelpRequest/Create.cshtml", model);
+                }
+                finalLat = region.Latitude;
+                finalLng = region.Longitude;
+            }
 
             var request = new HelpRequest
             {
@@ -94,6 +120,8 @@ namespace AfetYonetim.Controllers.Afetzede
                 Location = model.Location,
                 RegionId = model.RegionId,
                 Urgency = model.Urgency,
+                Latitude = finalLat,
+                Longitude = finalLng,
                 Status = RequestStatus.Bekliyor
             };
 
@@ -134,6 +162,19 @@ namespace AfetYonetim.Controllers.Afetzede
                     Text = r.RegionName + " (" + r.City + ")"
                 })
                 .ToListAsync();
+        }
+
+        private async Task<string> BuildRegionCoordsJson()
+        {
+            var dict = await _context.Regions
+                .Where(r => r.IsActive)
+                .ToDictionaryAsync(
+                    r => r.Id.ToString(),
+                    r => new[] { r.Latitude, r.Longitude });
+            return JsonSerializer.Serialize(dict, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
         }
     }
 }
