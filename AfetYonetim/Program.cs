@@ -36,7 +36,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromHours(24);
 });
-
+// ---- Faz 4: Current User Service ----
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<AfetYonetim.Services.ICurrentUserService, AfetYonetim.Services.CurrentUserService>();
 // ---- MVC ----
 builder.Services.AddControllersWithViews();
 
