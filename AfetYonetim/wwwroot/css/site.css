@@ -6,29 +6,76 @@
 }
 
 /* Durum badge'leri */
-.badge-bekliyor { background-color: #ffc107; color: #000; }
-.badge-onaylandi { background-color: #17a2b8; color: #fff; }
-.badge-atandi { background-color: #007bff; color: #fff; }
-.badge-yolda { background-color: #fd7e14; color: #fff; }
-.badge-teslim { background-color: #28a745; color: #fff; }
-.badge-reddedildi { background-color: #dc3545; color: #fff; }
-.badge-iptal { background-color: #6c757d; color: #fff; }
+.badge-bekliyor {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-onaylandi {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.badge-atandi {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.badge-yolda {
+    background-color: #fd7e14;
+    color: #fff;
+}
+
+.badge-teslim {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.badge-reddedildi {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.badge-iptal {
+    background-color: #6c757d;
+    color: #fff;
+}
 
 /* Aciliyet renkleri */
-.urgency-dusuk { color: #28a745; }
-.urgency-orta { color: #ffc107; }
-.urgency-yuksek { color: #dc3545; }
+.urgency-dusuk {
+    color: #28a745;
+}
+
+.urgency-orta {
+    color: #ffc107;
+}
+
+.urgency-yuksek {
+    color: #dc3545;
+}
 
 /* Risk renkleri */
-.risk-dusuk { color: #28a745; }
-.risk-orta { color: #ffc107; }
-.risk-yuksek { color: #fd7e14; }
-.risk-kritik { color: #dc3545; }
+.risk-dusuk {
+    color: #28a745;
+}
+
+.risk-orta {
+    color: #ffc107;
+}
+
+.risk-yuksek {
+    color: #fd7e14;
+}
+
+.risk-kritik {
+    color: #dc3545;
+}
 
 /* Login sayfası */
 .login-page {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }
+
 .login-box .card {
     border-radius: 12px;
 }
@@ -37,4 +84,136 @@
 .small-box .inner h3 {
     font-size: 2.2rem;
     font-weight: 700;
+}
+.small-box .inner p {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+@media (max-width: 768px) {
+
+    /* Dashboard sayaçları */
+    .small-box h3 {
+        font-size: 22px;
+    }
+
+    .small-box p {
+        font-size: 12px;
+    }
+
+    .info-box-number {
+        font-size: 18px;
+    }
+
+    /* Dashboard harita filtre çubuğu */
+    .map-filter-bar {
+        font-size: 11px;
+        gap: 6px;
+        padding: 6px 8px;
+    }
+
+    .map-filter-bar label {
+        padding: 2px 6px;
+    }
+
+    /* Dashboard harita yüksekliği */
+    #dashboardMap {
+        height: 320px !important;
+    }
+
+    /* Dashboard timeline */
+    .timeline-mini .item {
+        flex-wrap: wrap;
+    }
+
+    .timeline-mini .when {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 4px;
+    }
+
+    /* Anasayfa hero */
+    .lp-hero {
+        padding: 40px 18px;
+    }
+
+    .lp-hero h1 {
+        font-size: 32px;
+    }
+
+    .lp-hero p {
+        font-size: 15px;
+    }
+
+    .lp-hero .btn-light,
+    .lp-hero .btn-outline-light {
+        padding: 9px 18px;
+        font-size: 14px;
+        display: inline-block;
+        margin-bottom: 8px;
+    }
+
+    /* Anasayfa harita yüksekliği */
+    #lpMap {
+        height: 280px !important;
+    }
+
+    /* Tablolar */
+    .table th,
+    .table td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    /* Anasayfa hero — telefon */
+    .lp-hero {
+        padding: 30px 14px;
+    }
+
+    .lp-hero h1 {
+        font-size: 24px;
+    }
+
+    .lp-hero p {
+        font-size: 13px;
+    }
+
+    /* Anasayfa istatistikler 2x2 */
+    .lp-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .lp-stat {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 18px 10px;
+    }
+
+    .lp-stat-num {
+        font-size: 26px;
+    }
+
+    /* Nasıl Çalışır 1 sütun */
+    .lp-steps {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Stat kartları */
+    .small-box h3 {
+        font-size: 18px;
+    }
+
+    .small-box .icon {
+        font-size: 50px;
+        right: 10px;
+        top: 10px;
+    }
+
+    /* Footer */
+    .lp-footer {
+        flex-direction: column;
+        text-align: center;
+        padding: 18px;
+    }
 }
