@@ -20,6 +20,9 @@ namespace AfetYonetim.Models.Enums
         TeslimEdildi = 5,
 
         [Display(Name = "Reddedildi")]
-        Reddedildi = 6
+        Reddedildi = 6,
+
+        [Display(Name = "İptal Edildi")]
+        IptalEdildi = 7
     }
 }

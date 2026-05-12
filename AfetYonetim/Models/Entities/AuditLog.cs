@@ -10,23 +10,28 @@ namespace AfetYonetim.Models.Entities
         public ApplicationUser? User { get; set; }
 
         [Required]
-        [MaxLength(200)]
         [Display(Name = "İşlem")]
-        public string Action { get; set; } = string.Empty;
+        public Enums.AuditAction Action { get; set; }
 
         [Required]
-        [MaxLength(200)]
+        [MaxLength(100)]
         [Display(Name = "Tablo Adı")]
         public string EntityName { get; set; } = string.Empty;
 
-        [MaxLength(450)]
+        [MaxLength(50)]
         [Display(Name = "Kayıt Id")]
         public string? EntityId { get; set; }
+
+        [MaxLength(500)]
+        [Display(Name = "Açıklama")]
+        public string? Description { get; set; }
+
+        [MaxLength(100)]
+        [Display(Name = "Kullanıcı Anlık")]
+        public string? UserFullNameSnapshot { get; set; }
 
         [Required]
         [Display(Name = "Zaman")]
         public DateTime Timestamp { get; set; }
-
-        
     }
 }
