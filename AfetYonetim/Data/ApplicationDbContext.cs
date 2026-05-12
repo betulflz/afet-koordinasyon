@@ -1,4 +1,5 @@
 using AfetYonetim.Models.Entities;
+using AfetYonetim.Services;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +7,14 @@ namespace AfetYonetim.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        private readonly ICurrentUserService? _currentUser;
+
+        public ApplicationDbContext(
+            DbContextOptions<ApplicationDbContext> options,
+            ICurrentUserService? currentUser = null)
             : base(options)
         {
+            _currentUser = currentUser;
         }
 
         public DbSet<HelpRequest> HelpRequests => Set<HelpRequest>();
@@ -105,9 +111,12 @@ namespace AfetYonetim.Data
         private void SetAuditFields()
         {
             var entries = ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted);
+                .Where(e => e.State == EntityState.Added
+                         || e.State == EntityState.Modified
+                         || e.State == EntityState.Deleted);
 
             var now = DateTime.UtcNow;
+            var userId = _currentUser?.UserId ?? "system";
 
             foreach (var entry in entries)
             {
@@ -118,15 +127,17 @@ namespace AfetYonetim.Data
                     {
                         case EntityState.Added:
                             baseEntity.CreatedAt = now;
+                            baseEntity.CreatedBy = userId;
                             break;
                         case EntityState.Modified:
                             baseEntity.UpdatedAt = now;
+                            baseEntity.UpdatedBy = userId;
                             break;
                         case EntityState.Deleted:
-                            // Hard delete yerine soft delete
                             entry.State = EntityState.Modified;
                             baseEntity.IsDeleted = true;
                             baseEntity.DeletedAt = now;
+                            baseEntity.DeletedBy = userId;
                             break;
                     }
                 }
@@ -138,14 +149,17 @@ namespace AfetYonetim.Data
                     {
                         case EntityState.Added:
                             user.CreatedAt = now;
+                            user.CreatedBy = userId;
                             break;
                         case EntityState.Modified:
                             user.UpdatedAt = now;
+                            user.UpdatedBy = userId;
                             break;
                         case EntityState.Deleted:
                             entry.State = EntityState.Modified;
                             user.IsDeleted = true;
                             user.DeletedAt = now;
+                            user.DeletedBy = userId;
                             break;
                     }
                 }
