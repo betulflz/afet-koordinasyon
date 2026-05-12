@@ -1,7 +1,9 @@
+using AfetYonetim.Models.Enums;
 using AfetYonetim.Data;
 using AfetYonetim.Models.Entities;
-using AfetYonetim.Models.Enums;
 using AfetYonetim.Models.ViewModels.Admin;
+using AfetYonetim.Extensions;
+using AfetYonetim.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,22 +15,22 @@ namespace AfetYonetim.Controllers.Admin
     public class RegionController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUser;
 
-        public RegionController(ApplicationDbContext context)
+        public RegionController(ApplicationDbContext context, ICurrentUserService currentUser)
         {
             _context = context;
+            _currentUser = currentUser;
         }
 
         [HttpGet("")]
         public async Task<IActionResult> Index(int? page)
         {
             ViewData["Title"] = "Bölge Yönetimi";
-
             int pageSize = 10;
             int pageNumber = page ?? 1;
 
             var query = _context.Regions.OrderBy(r => r.City).ThenBy(r => r.RegionName);
-
             int totalCount = await query.CountAsync();
 
             var items = await query
@@ -45,7 +47,6 @@ namespace AfetYonetim.Controllers.Admin
                 })
                 .ToListAsync();
 
-            // Faz 3: Sadece aktif bölgeleri harita için çek
             var riskPins = await _context.Regions
                 .Where(r => r.IsActive)
                 .Select(r => new AfetYonetim.Models.ViewModels.Admin.Shared.RegionMapPin
@@ -62,43 +63,36 @@ namespace AfetYonetim.Controllers.Admin
                 Items = items,
                 CurrentPage = pageNumber,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
-                RiskMapPins = riskPins // Çantaya ekledik!
+                RiskMapPins = riskPins
             };
 
             return View("~/Views/Admin/Region/Index.cshtml", model);
         }
+
         [HttpGet("Create")]
         public IActionResult Create()
         {
-            ViewData["Title"] = "Yeni Bölge";
-            return View("~/Views/Admin/Region/Create.cshtml", new RegionFormViewModel());
+            ViewData["Title"] = "Yeni Bölge Ekle";
+            return View("~/Views/Admin/Region/Create.cshtml");
         }
 
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(RegionFormViewModel model)
+        public async Task<IActionResult> Create(Region region)
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Title"] = "Yeni Bölge";
-                return View("~/Views/Admin/Region/Create.cshtml", model);
+                ViewData["Title"] = "Yeni Bölge Ekle";
+                return View("~/Views/Admin/Region/Create.cshtml", region);
             }
 
-            var region = new Region
-            {
-                RegionName = model.RegionName,
-                City = model.City,
-                District = model.District,
-                RiskLevel = model.RiskLevel,
-                Latitude = model.Latitude,
-                Longitude = model.Longitude,
-                IsActive = model.IsActive
-            };
-
             _context.Regions.Add(region);
-            await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Bölge başarıyla oluşturuldu.";
+            // Faz 4: AuditLog
+            _context.AddAuditLog(_currentUser, AuditAction.RegionCreated, nameof(Region), region.Id.ToString(), $"Yeni bölge: {region.RegionName} ({region.City})");
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Bölge başarıyla eklendi.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -106,48 +100,24 @@ namespace AfetYonetim.Controllers.Admin
         public async Task<IActionResult> Edit(Guid id)
         {
             ViewData["Title"] = "Bölge Düzenle";
-
             var region = await _context.Regions.FindAsync(id);
-            if (region == null)
-                return NotFound();
-
-            var model = new RegionFormViewModel
-            {
-                Id = region.Id,
-                RegionName = region.RegionName,
-                City = region.City,
-                District = region.District,
-                RiskLevel = region.RiskLevel,
-                Latitude = region.Latitude,
-                Longitude = region.Longitude,
-                IsActive = region.IsActive
-            };
-
-            return View("~/Views/Admin/Region/Edit.cshtml", model);
+            if (region == null) return NotFound();
+            return View("~/Views/Admin/Region/Edit.cshtml", region);
         }
 
         [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, RegionFormViewModel model)
+        public async Task<IActionResult> Edit(Guid id, Region region)
         {
+            if (id != region.Id) return NotFound();
+
             if (!ModelState.IsValid)
             {
                 ViewData["Title"] = "Bölge Düzenle";
-                return View("~/Views/Admin/Region/Edit.cshtml", model);
+                return View("~/Views/Admin/Region/Edit.cshtml", region);
             }
 
-            var region = await _context.Regions.FindAsync(id);
-            if (region == null)
-                return NotFound();
-
-            region.RegionName = model.RegionName;
-            region.City = model.City;
-            region.District = model.District;
-            region.RiskLevel = model.RiskLevel;
-            region.Latitude = model.Latitude;
-            region.Longitude = model.Longitude;
-            region.IsActive = model.IsActive;
-
+            _context.Regions.Update(region);
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Bölge başarıyla güncellendi.";
@@ -159,13 +129,22 @@ namespace AfetYonetim.Controllers.Admin
         public async Task<IActionResult> Delete(Guid id)
         {
             var region = await _context.Regions.FindAsync(id);
-            if (region == null)
-                return NotFound();
+            if (region == null) return NotFound();
 
-            _context.Regions.Remove(region); // Soft delete (SaveChanges override)
+            var hasRequests = await _context.HelpRequests.AnyAsync(r => r.RegionId == id);
+            if (hasRequests)
+            {
+                TempData["Error"] = "Bu bölgeye ait yardım talepleri bulunduğu için silinemez.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Regions.Remove(region);
+
+            // Faz 4: AuditLog
+            _context.AddAuditLog(_currentUser, AuditAction.RegionDeleted, nameof(Region), region.Id.ToString(), $"Bölge silindi: {region.RegionName}");
+
             await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Bölge silindi.";
+            TempData["Success"] = "Bölge başarıyla silindi.";
             return RedirectToAction(nameof(Index));
         }
     }

@@ -1,83 +1,67 @@
-@model UserIndexViewModel
+@model AfetYonetim.Models.ViewModels.Admin.UserIndexViewModel
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-users mr-2"></i>Kullanıcılar</h3>
+        <h3 class="card-title"><i class="fas fa-users mr-2"></i>Kullanıcı Yönetimi</h3>
     </div>
     <div class="card-body">
-        <table class="table table-bordered table-hover table-striped">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Ad Soyad</th>
-                    <th>E-posta</th>
-                    <th>Telefon</th>
-                    <th>Rol</th>
-                    <th>Durum</th>
-                    <th>Kayıt Tarihi</th>
-                    <th>İşlem</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.Items.Count == 0)
-                {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead class="thead-dark">
                     <tr>
-                        <td colspan="7" class="text-center text-muted">Kullanıcı bulunamadı.</td>
+                        <th>Ad Soyad</th>
+                        <th>E-Posta</th>
+                        <th>Bölge</th>
+                        <th>Roller</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
                     </tr>
-                }
-                else
-                {
-                    @foreach (var item in Model.Items)
+                </thead>
+                <tbody>
+                    @if (Model.Items.Count == 0)
                     {
                         <tr>
-                            <td>@item.FullName</td>
-                            <td>@item.Email</td>
-                            <td>@(item.PhoneNumber ?? "-")</td>
-                            <td>
-                                @{
-                                    string roleBadge = item.Role switch
+                            <td colspan="6" class="text-center text-muted">Kullanıcı bulunamadı.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td class="align-middle">@item.FullName</td>
+                                <td class="align-middle">@item.Email</td>
+                                <td class="align-middle">@(item.RegionName ?? "-")</td>
+                                <td class="align-middle">
+                                    @foreach (var role in item.Roles)
                                     {
-                                        "Admin" => "badge-danger",
-                                        "Afetzede" => "badge-warning",
-                                        "Gonullu" => "badge-info",
-                                        _ => "badge-secondary"
-                                    };
-                                }
-                                <span class="badge @roleBadge">@item.Role</span>
-                            </td>
-                            <td>
-                                @if (item.IsActive)
-                                {
-                                    <span class="badge badge-success">Aktif</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-secondary">Pasif</span>
-                                }
-                            </td>
-                            <td>@item.CreatedAt.ToString("dd.MM.yyyy")</td>
-                            <td>
-                                <form action="/Admin/User/ToggleActive/@item.Id" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
+                                        <span class="badge badge-info mr-1">@role</span>
+                                    }
+                                </td>
+                                <td class="align-middle">
                                     @if (item.IsActive)
                                     {
-                                        <button type="submit" class="btn btn-sm btn-warning"
-                                                onclick="return confirm('Kullanıcıyı pasif yapmak istediğinizden emin misiniz?')">
-                                            <i class="fas fa-ban"></i> Pasif Yap
-                                        </button>
+                                        <span class="badge badge-success p-2">Aktif</span>
                                     }
                                     else
                                     {
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="fas fa-check"></i> Aktif Yap
-                                        </button>
+                                        <span class="badge badge-danger p-2">Pasif</span>
                                     }
-                                </form>
-                            </td>
-                        </tr>
+                                </td>
+                                <td class="align-middle">
+                                    <form action="/Admin/User/ToggleActive/@item.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Durumu Değiştir">
+                                            <i class="fas fa-power-off"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
                     }
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
 
         @if (Model.TotalPages > 1)
         {

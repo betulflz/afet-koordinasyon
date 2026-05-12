@@ -13,6 +13,8 @@ namespace AfetYonetim.Models.ViewModels.Admin
         public HelpCategory? Category { get; set; }
         public UrgencyLevel? Urgency { get; set; }
         public string? Search { get; set; }
+
+       
     }
 
     public class HelpRequestListItem
