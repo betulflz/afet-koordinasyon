@@ -1,124 +1,62 @@
-@model HelpRequest
+@model AfetYonetim.Models.Entities.HelpRequest
 
 @{
-    string StatusBadge(RequestStatus s) => s switch
+    string StatusBadge(AfetYonetim.Models.Enums.RequestStatus s) => s switch
     {
-        RequestStatus.Bekliyor => "badge-warning",
-        RequestStatus.Onaylandi => "badge-info",
-        RequestStatus.Atandi => "badge-primary",
-        RequestStatus.Yolda => "badge-secondary",
-        RequestStatus.TeslimEdildi => "badge-success",
-        RequestStatus.Reddedildi => "badge-danger",
+        AfetYonetim.Models.Enums.RequestStatus.Bekliyor => "badge-warning",
+        AfetYonetim.Models.Enums.RequestStatus.Onaylandi => "badge-info",
+        AfetYonetim.Models.Enums.RequestStatus.Atandi => "badge-primary",
+        AfetYonetim.Models.Enums.RequestStatus.Yolda => "badge-secondary",
+        AfetYonetim.Models.Enums.RequestStatus.TeslimEdildi => "badge-success",
+        AfetYonetim.Models.Enums.RequestStatus.Reddedildi => "badge-danger",
+        AfetYonetim.Models.Enums.RequestStatus.IptalEdildi => "badge-secondary",
         _ => "badge-dark"
-    };
-
-    // Timeline için durum adımları (reddedildi hariç)
-    var timelineSteps = new[] {
-        RequestStatus.Bekliyor,
-        RequestStatus.Onaylandi,
-        RequestStatus.Atandi,
-        RequestStatus.Yolda,
-        RequestStatus.TeslimEdildi
     };
 }
 
-@if (Model.Status != RequestStatus.Reddedildi)
-{
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-route mr-2"></i>Talep Durumu</h3>
-        </div>
-        <div class="card-body">
-            <div class="d-flex justify-content-between">
-                @for (int i = 0; i < timelineSteps.Length; i++)
-                {
-                    bool isPast = (int)Model.Status >= (int)timelineSteps[i];
-                    bool isCurrent = Model.Status == timelineSteps[i];
-                    string bgClass = isCurrent ? "bg-primary text-white" : isPast ? "bg-success text-white" : "bg-light text-muted";
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Talep Detayı</h3>
+                <span class="badge @StatusBadge(Model.Status) float-right p-2">@Model.Status.GetDisplayName()</span>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Kategori</dt>
+                    <dd class="col-sm-8">@Model.Category.GetDisplayName()</dd>
 
-                    <div class="text-center flex-fill">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center @bgClass"
-                             style="width:40px; height:40px; font-weight:bold;">
-                            @(i + 1)
-                        </div>
-                        <div class="small mt-1">@timelineSteps[i].GetDisplayName()</div>
-                    </div>
+                    <dt class="col-sm-4">Aciliyet</dt>
+                    <dd class="col-sm-8">@Model.Urgency.GetDisplayName()</dd>
+
+                    <dt class="col-sm-4">Açıklama</dt>
+                    <dd class="col-sm-8">@Model.Description</dd>
+
+                    <dt class="col-sm-4">Konum (Adres)</dt>
+                    <dd class="col-sm-8">@(Model.Location ?? "Belirtilmemiş")</dd>
+
+                    <dt class="col-sm-4">Bölge</dt>
+                    <dd class="col-sm-8">@Model.Region?.RegionName</dd>
+
+                    <dt class="col-sm-4">Oluşturulma Tarihi</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a href="/Afetzede/HelpRequest" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i> Listeye Dön
+                </a>
+                @if (Model.Status == AfetYonetim.Models.Enums.RequestStatus.Bekliyor || Model.Status == AfetYonetim.Models.Enums.RequestStatus.Onaylandi)
+                {
+                    <form action="/Afetzede/HelpRequest/Cancel/@Model.Id" method="post" class="d-inline ml-2">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger"
+                                onclick="return confirm('Talebi iptal etmek istediğinizden emin misiniz?')">
+                            <i class="fas fa-times mr-1"></i> Talebi İptal Et
+                        </button>
+                    </form>
                 }
             </div>
         </div>
     </div>
-}
-else
-{
-    <div class="alert alert-danger">
-        <i class="fas fa-times-circle mr-2"></i>
-        Bu talep reddedilmiştir.
-    </div>
-}
-
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Talep Bilgileri</h3>
-    </div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-4">Kategori</dt>
-            <dd class="col-sm-8">@Model.Category.GetDisplayName()</dd>
-
-            <dt class="col-sm-4">Açıklama</dt>
-            <dd class="col-sm-8">@Model.Description</dd>
-
-            <dt class="col-sm-4">Konum</dt>
-            <dd class="col-sm-8">@(Model.Location ?? "Belirtilmemiş")</dd>
-
-            <dt class="col-sm-4">Bölge</dt>
-            <dd class="col-sm-8">@Model.Region?.RegionName</dd>
-
-            <dt class="col-sm-4">Aciliyet</dt>
-            <dd class="col-sm-8">@Model.Urgency.GetDisplayName()</dd>
-
-            <dt class="col-sm-4">Durum</dt>
-            <dd class="col-sm-8">
-                <span class="badge @StatusBadge(Model.Status) p-2">@Model.Status.GetDisplayName()</span>
-            </dd>
-
-            <dt class="col-sm-4">Oluşturulma</dt>
-            <dd class="col-sm-8">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
-        </dl>
-    </div>
 </div>
-
-@{
-    var activeAssignment = Model.Assignments?
-        .Where(a => a.Status != AssignmentStatus.Iptal)
-        .OrderByDescending(a => a.AssignedDate)
-        .FirstOrDefault();
-}
-
-@if (activeAssignment != null)
-{
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-user-check mr-2"></i>Atanan Gönüllü</h3>
-        </div>
-        <div class="card-body">
-            <dl class="row mb-0">
-                <dt class="col-sm-4">Gönüllü</dt>
-                <dd class="col-sm-8">@activeAssignment.Volunteer?.FullName</dd>
-
-                <dt class="col-sm-4">Atanma Tarihi</dt>
-                <dd class="col-sm-8">@activeAssignment.AssignedDate.ToString("dd.MM.yyyy HH:mm")</dd>
-
-                @if (activeAssignment.DeliveryDate.HasValue)
-                {
-                    <dt class="col-sm-4">Teslim Tarihi</dt>
-                    <dd class="col-sm-8">@activeAssignment.DeliveryDate.Value.ToString("dd.MM.yyyy HH:mm")</dd>
-                }
-            </dl>
-        </div>
-    </div>
-}
-
-<a href="/Afetzede/HelpRequest" class="btn btn-secondary">
-    <i class="fas fa-arrow-left mr-1"></i> Taleplerime Dön
-</a>

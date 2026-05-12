@@ -1,21 +1,22 @@
 @model AfetYonetim.Models.ViewModels.Afetzede.HelpRequestListViewModel
 
 @{
-    string StatusBadge(RequestStatus s) => s switch
+    string StatusBadge(AfetYonetim.Models.Enums.RequestStatus s) => s switch
     {
-        RequestStatus.Bekliyor => "badge-warning",
-        RequestStatus.Onaylandi => "badge-info",
-        RequestStatus.Atandi => "badge-primary",
-        RequestStatus.Yolda => "badge-secondary",
-        RequestStatus.TeslimEdildi => "badge-success",
-        RequestStatus.Reddedildi => "badge-danger",
+        AfetYonetim.Models.Enums.RequestStatus.Bekliyor => "badge-warning",
+        AfetYonetim.Models.Enums.RequestStatus.Onaylandi => "badge-info",
+        AfetYonetim.Models.Enums.RequestStatus.Atandi => "badge-primary",
+        AfetYonetim.Models.Enums.RequestStatus.Yolda => "badge-secondary",
+        AfetYonetim.Models.Enums.RequestStatus.TeslimEdildi => "badge-success",
+        AfetYonetim.Models.Enums.RequestStatus.Reddedildi => "badge-danger",
+        AfetYonetim.Models.Enums.RequestStatus.IptalEdildi => "badge-secondary",
         _ => "badge-dark"
     };
 }
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title"><i class="fas fa-list mr-2"></i>Taleplerim</h3>
+        <h3 class="card-title"><i class="fas fa-list-ul mr-2"></i>Taleplerim</h3>
         <a href="/Afetzede/HelpRequest/Create" class="btn btn-sm btn-primary">
             <i class="fas fa-plus mr-1"></i> Yeni Talep
         </a>
@@ -26,9 +27,9 @@
                 <tr>
                     <th>Kategori</th>
                     <th>Aciliyet</th>
-                    <th>Durum</th>
                     <th>Konum</th>
                     <th>Tarih</th>
+                    <th>Durum</th>
                     <th>İşlem</th>
                 </tr>
             </thead>
@@ -36,7 +37,7 @@
                 @if (Model.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="6" class="text-center text-muted">Henüz talebiniz yok.</td>
+                        <td colspan="6" class="text-center text-muted">Henüz bir yardım talebi oluşturmadınız.</td>
                     </tr>
                 }
                 else
@@ -46,13 +47,23 @@
                         <tr>
                             <td>@item.Category.GetDisplayName()</td>
                             <td>@item.Urgency.GetDisplayName()</td>
-                            <td><span class="badge @StatusBadge(item.Status)">@item.Status.GetDisplayName()</span></td>
-                            <td>@(item.Location ?? "-")</td>
+                            <td>@(item.Location ?? "Belirtilmemiş")</td>
                             <td>@item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td><span class="badge @StatusBadge(item.Status)">@item.Status.GetDisplayName()</span></td>
                             <td>
                                 <a href="/Afetzede/HelpRequest/Details/@item.Id" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i> Detay
                                 </a>
+                                @if (item.Status == AfetYonetim.Models.Enums.RequestStatus.Bekliyor || item.Status == AfetYonetim.Models.Enums.RequestStatus.Onaylandi)
+                                {
+                                    <form action="/Afetzede/HelpRequest/Cancel/@item.Id" method="post" class="d-inline ml-1">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Talebi iptal etmek istediğinizden emin misiniz?')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                }
                             </td>
                         </tr>
                     }

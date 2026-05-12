@@ -1,7 +1,9 @@
 using AfetYonetim.Data;
+using AfetYonetim.Extensions;
 using AfetYonetim.Models.Entities;
 using AfetYonetim.Models.Enums;
 using AfetYonetim.Models.ViewModels.Afetzede;
+using AfetYonetim.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,10 +18,12 @@ namespace AfetYonetim.Controllers.Afetzede
     public class HelpRequestController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUser;
 
-        public HelpRequestController(ApplicationDbContext context)
+        public HelpRequestController(ApplicationDbContext context, ICurrentUserService currentUser)
         {
             _context = context;
+            _currentUser = currentUser;
         }
 
         [HttpGet("")]
@@ -71,7 +75,6 @@ namespace AfetYonetim.Controllers.Afetzede
                 RegionList = await GetRegionSelectList()
             };
 
-            // Faz 3: Bölgelerin koordinatlarını JSON olarak ön yüze yolla
             ViewBag.RegionCoords = await BuildRegionCoordsJson();
 
             return View("~/Views/Afetzede/HelpRequest/Create.cshtml", model);
@@ -91,12 +94,15 @@ namespace AfetYonetim.Controllers.Afetzede
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
-            // Faz 3: Lat/Long fallback — haritadan geldiyse onu, yoksa Region'ın koordinatını kullan
+            // Lat/Long fallback (Faz 3)
             double finalLat, finalLng;
+            string regionName = "";
             if (model.Latitude.HasValue && model.Longitude.HasValue)
             {
                 finalLat = model.Latitude.Value;
                 finalLng = model.Longitude.Value;
+                var region = await _context.Regions.FindAsync(model.RegionId);
+                regionName = region?.RegionName ?? "";
             }
             else
             {
@@ -110,6 +116,7 @@ namespace AfetYonetim.Controllers.Afetzede
                 }
                 finalLat = region.Latitude;
                 finalLng = region.Longitude;
+                regionName = region.RegionName;
             }
 
             var request = new HelpRequest
@@ -126,6 +133,14 @@ namespace AfetYonetim.Controllers.Afetzede
             };
 
             _context.HelpRequests.Add(request);
+
+            // Faz 4: AuditLog (Yeni Talep açıldı logu)
+            _context.AddAuditLog(_currentUser,
+                AuditAction.RequestCreated,
+                nameof(HelpRequest),
+                request.Id.ToString(),
+                $"Yeni talep: {model.Category} · {regionName}");
+
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Yardım talebiniz başarıyla oluşturuldu.";
@@ -149,6 +164,40 @@ namespace AfetYonetim.Controllers.Afetzede
                 return NotFound();
 
             return View("~/Views/Afetzede/HelpRequest/Details.cshtml", request);
+        }
+
+        // Faz 4: YENİ ACTION — Talep İptal
+        [HttpPost("Cancel/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(Guid id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+            var request = await _context.HelpRequests
+                .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
+
+            if (request == null)
+                return NotFound();
+
+            if (request.Status != RequestStatus.Bekliyor && request.Status != RequestStatus.Onaylandi)
+            {
+                TempData["Error"] = "Bu talep artık iptal edilemez (gönüllü atanmış olabilir).";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            request.Status = RequestStatus.IptalEdildi;
+
+            // Faz 4: AuditLog (Talep iptal edildi logu)
+            _context.AddAuditLog(_currentUser,
+                AuditAction.RequestCancelled,
+                nameof(HelpRequest),
+                id.ToString(),
+                $"Talep iptal edildi: #{id.ToString()[..8]} ({request.Category})");
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Talebiniz iptal edildi.";
+            return RedirectToAction(nameof(Index));
         }
 
         private async Task<List<SelectListItem>> GetRegionSelectList()
