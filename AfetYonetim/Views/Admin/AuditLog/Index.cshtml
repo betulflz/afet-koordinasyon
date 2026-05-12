@@ -1,0 +1,115 @@
+@model AfetYonetim.Models.ViewModels.Admin.AuditLogIndexViewModel
+@using AfetYonetim.Models.Enums
+@using AfetYonetim.Extensions
+
+@{
+    string ActionBadge(AuditAction a) => a switch
+    {
+        AuditAction.RequestCreated => "badge-info",
+        AuditAction.RequestCancelled => "badge-secondary",
+        AuditAction.RequestApproved => "badge-success",
+        AuditAction.RequestRejected => "badge-danger",
+        AuditAction.AssignmentCreated => "badge-primary",
+        AuditAction.AssignmentAccepted => "badge-warning",
+        AuditAction.AssignmentCompleted => "badge-success",
+        AuditAction.AssignmentRejected => "badge-dark",
+        AuditAction.RegionCreated => "badge-info",
+        AuditAction.RegionDeleted => "badge-danger",
+        AuditAction.UserToggledActive => "badge-warning",
+        _ => "badge-secondary"
+    };
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-history mr-2"></i>Audit Log</h3>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <label>Başlangıç Tarihi</label>
+                    <input type="date" name="fromDate" class="form-control"
+                           value="@Model.FromDate?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label>Bitiş Tarihi</label>
+                    <input type="date" name="toDate" class="form-control"
+                           value="@Model.ToDate?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label>Kullanıcı</label>
+                    <select name="userId" class="form-control" asp-items="Model.UserList">
+                        <option value="">-- Tümü --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Aksiyon</label>
+                    <select name="action" class="form-control"
+                            asp-items="Html.GetEnumSelectList<AuditAction>()">
+                        <option value="">-- Tümü --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter mr-1"></i> Filtrele
+                </button>
+                <a href="/Admin/AuditLog" class="btn btn-outline-secondary btn-sm">
+                    Temizle
+                </a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th style="width:160px">Zaman</th>
+                        <th style="width:200px">Kullanıcı</th>
+                        <th style="width:180px">Aksiyon</th>
+                        <th>Açıklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Items.Any())
+                    {
+                        <tr><td colspan="4" class="text-center text-muted p-4">Kayıt bulunamadı.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.Timestamp.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@item.UserFullName</td>
+                                <td><span class="badge @ActionBadge(item.Action) p-2">@item.Action.GetDisplayName()</span></td>
+                                <td>@(item.Description ?? "-")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        var url = $"/Admin/AuditLog?page={i}";
+                        if (Model.FromDate.HasValue) url += $"&fromDate={Model.FromDate:yyyy-MM-dd}";
+                        if (Model.ToDate.HasValue) url += $"&toDate={Model.ToDate:yyyy-MM-dd}";
+                        if (!string.IsNullOrEmpty(Model.UserId)) url += $"&userId={Model.UserId}";
+                        if (Model.Action.HasValue) url += $"&action={Model.Action}";
+
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="@url">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>
