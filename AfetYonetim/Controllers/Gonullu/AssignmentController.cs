@@ -1,3 +1,4 @@
+using AfetYonetim.Models.Entities;
 using AfetYonetim.Data;
 using AfetYonetim.Models.Enums;
 using AfetYonetim.Models.ViewModels.Gonullu;
@@ -5,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using AfetYonetim.Extensions;
+using AfetYonetim.Services;
 
 namespace AfetYonetim.Controllers.Gonullu
 {
@@ -13,10 +16,13 @@ namespace AfetYonetim.Controllers.Gonullu
     public class AssignmentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUser;
 
-        public AssignmentController(ApplicationDbContext context)
+        // DÜZELTME: currentUser parametresini buraya ekledik
+        public AssignmentController(ApplicationDbContext context, ICurrentUserService currentUser)
         {
             _context = context;
+            _currentUser = currentUser;
         }
 
         [HttpGet("")]
@@ -109,6 +115,9 @@ namespace AfetYonetim.Controllers.Gonullu
 
             assignment.Status = AssignmentStatus.Yolda;
             assignment.HelpRequest!.Status = RequestStatus.Yolda;
+            
+            _context.AddAuditLog(_currentUser, AuditAction.AssignmentAccepted, nameof(Assignment), assignment.Id.ToString(), $"#{assignment.Id.ToString()[..8]} yola çıkıldı");
+            
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Görevi kabul ettiniz. Yola çıktınız!";
@@ -140,6 +149,10 @@ namespace AfetYonetim.Controllers.Gonullu
                 assignment.Notes = notes;
 
             assignment.HelpRequest!.Status = RequestStatus.TeslimEdildi;
+            
+            // Faz 4: AuditLog EKLENDİ
+            _context.AddAuditLog(_currentUser, AuditAction.AssignmentCompleted, nameof(Assignment), assignment.Id.ToString(), $"#{assignment.Id.ToString()[..8]} teslim edildi");
+            
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Görev başarıyla teslim edildi!";
@@ -167,6 +180,10 @@ namespace AfetYonetim.Controllers.Gonullu
 
             assignment.Status = AssignmentStatus.Iptal;
             assignment.HelpRequest!.Status = RequestStatus.Onaylandi; // Yeniden atanabilir
+            
+            // Faz 4: AuditLog EKLENDİ
+            _context.AddAuditLog(_currentUser, AuditAction.AssignmentRejected, nameof(Assignment), assignment.Id.ToString(), $"#{assignment.Id.ToString()[..8]} reddedildi (talep yeniden onaylandı)");
+            
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Görev reddedildi. Talep yeniden atanmak üzere listeye döndü.";
