@@ -2,6 +2,7 @@ using AfetYonetim.Models.Entities;
 using AfetYonetim.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AfetYonetim.Controllers
 {
@@ -129,6 +130,48 @@ namespace AfetYonetim.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        // --------------------------------------------------------
+        // FAZ 4: ŞİFRE DEĞİŞTİRME BÖLÜMÜ (BURAYA EKLENDİ)
+        // --------------------------------------------------------
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View(new AfetYonetim.Models.ViewModels.Account.ChangePasswordViewModel());
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(AfetYonetim.Models.ViewModels.Account.ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            var result = await _userManager.ChangePasswordAsync(
+                user, model.CurrentPassword, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return View(model);
+            }
+
+            await _signInManager.RefreshSignInAsync(user);
+            TempData["Success"] = "Şifreniz başarıyla değiştirildi.";
+
+            if (User.IsInRole("Admin")) return Redirect("/Admin/Profile");
+            if (User.IsInRole("Afetzede")) return Redirect("/Afetzede/Profile");
+            if (User.IsInRole("Gonullu")) return Redirect("/Gonullu/Profile");
+            return Redirect("/");
         }
 
         // GET: /Account/AccessDenied
