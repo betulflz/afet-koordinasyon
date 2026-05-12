@@ -28,6 +28,9 @@
         <ul class="navbar-nav ml-auto">
             @if (SignInManager.IsSignedIn(User))
             {
+                @* FAZ 4: Admin Bildirim Çanı Bileşeni Buraya Eklendi *@
+                @await Html.PartialAsync("_NavbarNotifications")
+
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                        data-toggle="dropdown" aria-expanded="false">
@@ -45,7 +48,6 @@
                         </span>
                         <div class="dropdown-divider"></div>
                         @{
-                            // GÜNCELLENDİ: Admin profili eklendi
                             var navProfileUrl = User.IsInRole("Admin") ? "/Admin/Profile" :
                                                 (User.IsInRole("Afetzede") ? "/Afetzede/Profile" :
                                                 (User.IsInRole("Gonullu") ? "/Gonullu/Profile" : "/"));

@@ -149,95 +149,99 @@ namespace AfetYonetim.Controllers.Admin
 
         private async Task<List<ActivityItem>> BuildRecentActivitiesAsync()
         {
-            // 5 ayrı küçük sorgu — her biri Take(5). Yerel union ile birleştirilir, OrderBy.Take(5).
             var newRequests = await _context.HelpRequests
-                .Include(r => r.User)
-                .Include(r => r.Region)
-                .OrderByDescending(r => r.CreatedAt)
+            .Where(r => r.Status == RequestStatus.Bekliyor)
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(5)
+            .Select(r => new ActivityItem
+            {
+                Type = "NewRequest",
+                Title = "Yeni yardım talebi",
+                Subtitle = r.Category.ToString() + " · " + r.Location,
+                When = r.CreatedAt,
+                IconClass = "fas fa-plus",
+                ColorClass = "bg-info"
+            }).ToListAsync();
+
+            var approved = await _context.HelpRequests
+                .Where(r => r.Status == RequestStatus.Onaylandi)
+                .OrderByDescending(r => r.UpdatedAt ?? r.CreatedAt)
                 .Take(5)
                 .Select(r => new ActivityItem
                 {
-                    Type = "Create",
-                    Title = "Yeni talep — " + r.Category.ToString(),
-                    Subtitle = r.User!.Name + " " + r.User.Surname + " · " + r.Region!.RegionName,
-                    When = r.CreatedAt,
-                    IconClass = "fas fa-plus",
-                    ColorClass = "bg-info"
-                })
-                .ToListAsync();
+                    Type = "Approved",
+                    Title = "Talep onaylandı",
+                    Subtitle = r.Category.ToString(),
+                    When = r.UpdatedAt ?? r.CreatedAt,
+                    IconClass = "fas fa-check",
+                    ColorClass = "bg-success"
+                }).ToListAsync();
 
-            var approved = await _context.HelpRequests
-                .Where(r => r.Status == RequestStatus.Onaylandi
-                         || r.Status == RequestStatus.Atandi
-                         || r.Status == RequestStatus.Yolda
-                         || r.Status == RequestStatus.TeslimEdildi)
+            // EKLEME: İptal edilen talepler
+            var cancelled = await _context.HelpRequests
+                .Where(r => r.Status == RequestStatus.IptalEdildi)
                 .Include(r => r.User)
                 .OrderByDescending(r => r.UpdatedAt ?? r.CreatedAt)
                 .Take(5)
                 .Select(r => new ActivityItem
                 {
-                    Type = "Approve",
-                    Title = "Talep onaylandı",
+                    Type = "Cancel",
+                    Title = "Talep iptal edildi",
                     Subtitle = r.User!.Name + " " + r.User.Surname + " · " + r.Category.ToString(),
                     When = r.UpdatedAt ?? r.CreatedAt,
-                    IconClass = "fas fa-check",
-                    ColorClass = "bg-success"
+                    IconClass = "fas fa-ban",
+                    ColorClass = "bg-secondary"
                 })
                 .ToListAsync();
 
             var rejected = await _context.HelpRequests
                 .Where(r => r.Status == RequestStatus.Reddedildi)
-                .Include(r => r.User)
                 .OrderByDescending(r => r.UpdatedAt ?? r.CreatedAt)
                 .Take(5)
                 .Select(r => new ActivityItem
                 {
-                    Type = "Reject",
+                    Type = "Rejected",
                     Title = "Talep reddedildi",
-                    Subtitle = (r.User != null ? r.User.Name + " " + r.User.Surname : "Bilinmeyen") + " · " + r.Category.ToString(),
+                    Subtitle = r.Category.ToString(),
                     When = r.UpdatedAt ?? r.CreatedAt,
                     IconClass = "fas fa-times",
                     ColorClass = "bg-danger"
-                })
-                .ToListAsync();
+                }).ToListAsync();
 
             var assigned = await _context.Assignments
                 .Include(a => a.Volunteer)
-                .Include(a => a.HelpRequest)
-                    .ThenInclude(h => h!.Region)
                 .OrderByDescending(a => a.AssignedDate)
                 .Take(5)
                 .Select(a => new ActivityItem
                 {
-                    Type = "Assign",
+                    Type = "Assigned",
                     Title = "Gönüllü atandı",
-                    Subtitle = a.Volunteer!.Name + " " + a.Volunteer.Surname + " → " + a.HelpRequest!.Region!.RegionName + ", " + a.HelpRequest.Category.ToString(),
+                    Subtitle = a.Volunteer!.Name + " " + a.Volunteer.Surname,
                     When = a.AssignedDate,
-                    IconClass = "fas fa-user",
+                    IconClass = "fas fa-user-tag",
                     ColorClass = "bg-primary"
-                })
-                .ToListAsync();
+                }).ToListAsync();
 
             var delivered = await _context.Assignments
-                .Where(a => a.Status == AssignmentStatus.TeslimEdildi && a.DeliveryDate.HasValue)
+                .Where(a => a.Status == AssignmentStatus.TeslimEdildi)
                 .Include(a => a.Volunteer)
-                .Include(a => a.HelpRequest)
-                .OrderByDescending(a => a.DeliveryDate)
+                .OrderByDescending(a => a.DeliveryDate ?? a.AssignedDate)
                 .Take(5)
                 .Select(a => new ActivityItem
                 {
-                    Type = "Deliver",
-                    Title = a.Volunteer!.Name + " " + a.Volunteer.Surname + " teslim etti",
-                    Subtitle = a.HelpRequest!.Category.ToString(),
-                    When = a.DeliveryDate!.Value,
+                    Type = "Delivered",
+                    Title = "Yardım teslim edildi",
+                    Subtitle = a.Volunteer!.Name + " " + a.Volunteer.Surname,
+                    When = a.DeliveryDate ?? a.AssignedDate,
                     IconClass = "fas fa-truck",
                     ColorClass = "bg-success"
-                })
-                .ToListAsync();
+                }).ToListAsync();
 
+            // CANCELLED listesini de ekledik:
             return newRequests
                 .Concat(approved)
                 .Concat(rejected)
+                .Concat(cancelled) // Buraya eklendi
                 .Concat(assigned)
                 .Concat(delivered)
                 .OrderByDescending(a => a.When)

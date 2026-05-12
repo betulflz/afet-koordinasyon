@@ -1,0 +1,78 @@
+@inject AfetYonetim.Data.ApplicationDbContext _ctx
+@using AfetYonetim.Models.Enums
+@using Microsoft.EntityFrameworkCore
+@using AfetYonetim.Extensions
+
+@{
+    if (!User.IsInRole("Admin")) { return; }
+
+    var pendingCount = await _ctx.HelpRequests
+        .CountAsync(r => r.Status == RequestStatus.Bekliyor);
+
+    var recentPending = await _ctx.HelpRequests
+        .Where(r => r.Status == RequestStatus.Bekliyor)
+        .Include(r => r.User)
+        .Include(r => r.Region)
+        .OrderByDescending(r => r.CreatedAt)
+        .Take(5)
+        .Select(r => new
+        {
+            r.Id,
+            r.CreatedAt,
+            Category = r.Category,
+            UserFullName = r.User!.Name + " " + r.User.Surname,
+            RegionName = r.Region!.RegionName
+        })
+        .ToListAsync();
+
+    string AgoText(DateTime t)
+    {
+        var diff = DateTime.UtcNow - t;
+        if (diff.TotalMinutes < 1) return "az önce";
+        if (diff.TotalMinutes < 60) return ((int)diff.TotalMinutes) + " dk önce";
+        if (diff.TotalHours < 24) return ((int)diff.TotalHours) + " saat önce";
+        return ((int)diff.TotalDays) + " gün önce";
+    }
+}
+
+<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#">
+        <i class="far fa-bell"></i>
+        @if (pendingCount > 0)
+        {
+            <span class="badge badge-warning navbar-badge">@pendingCount</span>
+        }
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg">
+        <span class="dropdown-item dropdown-header font-weight-bold">
+            @pendingCount Bekleyen Talep
+        </span>
+        <div class="dropdown-divider"></div>
+
+        @if (!recentPending.Any())
+        {
+            <span class="dropdown-item text-muted text-center p-3">Bekleyen talep yok</span>
+        }
+        else
+        {
+            @foreach (var p in recentPending)
+            {
+                <a href="/Admin/HelpRequest/Details/@p.Id" class="dropdown-item">
+                    <div class="media">
+                        <div class="media-body">
+                            <h3 class="dropdown-item-title font-weight-bold">
+                                @p.Category.GetDisplayName()
+                                <span class="float-right text-sm text-muted">@AgoText(p.CreatedAt)</span>
+                            </h3>
+                            <p class="text-sm">@p.UserFullName</p>
+                            <p class="text-sm text-muted"><i class="fas fa-map-marker-alt mr-1"></i> @p.RegionName</p>
+                        </div>
+                    </div>
+                </a>
+                <div class="dropdown-divider"></div>
+            }
+        }
+
+        <a href="/Admin/HelpRequest?status=Bekliyor" class="dropdown-item dropdown-footer">Tümünü Gör</a>
+    </div>
+</li>
