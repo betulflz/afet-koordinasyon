@@ -1,5 +1,5 @@
-﻿@inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
+﻿@inject Microsoft.AspNetCore.Identity.SignInManager<AfetYonetim.Models.Entities.ApplicationUser> SignInManager
+@inject Microsoft.AspNetCore.Identity.UserManager<AfetYonetim.Models.Entities.ApplicationUser> UserManager
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -37,23 +37,25 @@
                             @(currentUser?.FullName ?? "Kullanıcı")
                         }
                     </a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                        <span class="dropdown-item-text text-muted">
-                            @if (User.IsInRole("Admin")) { <text>Admin</text> }
-                            else if (User.IsInRole("Afetzede")) { <text>Afetzede</text> }
-                            else if (User.IsInRole("Gonullu")) { <text>Gönüllü</text> }
+                    <div class="dropdown-menu dropdown-menu-right shadow-sm" aria-labelledby="userDropdown">
+                        <span class="dropdown-item-text text-muted small font-weight-bold">
+                            @if (User.IsInRole("Admin")) { <text><i class="fas fa-user-shield mr-1"></i>Admin</text> }
+                            else if (User.IsInRole("Afetzede")) { <text><i class="fas fa-user mr-1"></i>Afetzede</text> }
+                            else if (User.IsInRole("Gonullu")) { <text><i class="fas fa-hands-helping mr-1"></i>Gönüllü</text> }
                         </span>
                         <div class="dropdown-divider"></div>
                         @{
-                            var navProfileUrl = User.IsInRole("Afetzede") ? "/Afetzede/Profile" :
-                                (User.IsInRole("Gonullu") ? "/Gonullu/Profile" : "/");
+                            // GÜNCELLENDİ: Admin profili eklendi
+                            var navProfileUrl = User.IsInRole("Admin") ? "/Admin/Profile" :
+                                                (User.IsInRole("Afetzede") ? "/Afetzede/Profile" :
+                                                (User.IsInRole("Gonullu") ? "/Gonullu/Profile" : "/"));
                         }
                         <a class="dropdown-item" href="@navProfileUrl">
                             <i class="fas fa-cog mr-2"></i> Profil
                         </a>
                         <div class="dropdown-divider"></div>
                         <form asp-controller="Account" asp-action="Logout" method="post">
-                            <button type="submit" class="dropdown-item">
+                            <button type="submit" class="dropdown-item text-danger">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Çıkış Yap
                             </button>
                         </form>
@@ -65,7 +67,7 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <a href="~/" class="brand-link">
             <i class="fas fa-hands-helping brand-image ml-3" style="font-size: 1.5rem; color: #e94560;"></i>
-            <span class="brand-text font-weight-light">Afet Yönetim</span>
+            <span class="brand-text font-weight-light font-weight-bold">Afet Yönetim</span>
         </a>
 
         <div class="sidebar">
@@ -80,7 +82,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1 class="m-0">@ViewData["Title"]</h1>
+                        <h1 class="m-0 font-weight-bold text-dark">@ViewData["Title"]</h1>
                     </div>
                 </div>
             </div>
@@ -90,7 +92,7 @@
             <div class="container-fluid">
                 @if (TempData["Success"] != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                         <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
                         <button type="button" class="close" data-dismiss="alert" aria-label="Kapat">
                             <span aria-hidden="true">&times;</span>
@@ -99,7 +101,7 @@
                 }
                 @if (TempData["Error"] != null)
                 {
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                         <i class="fas fa-exclamation-circle mr-2"></i>@TempData["Error"]
                         <button type="button" class="close" data-dismiss="alert" aria-label="Kapat">
                             <span aria-hidden="true">&times;</span>
@@ -115,7 +117,7 @@
     <footer class="main-footer">
         <strong>&copy; 2026 Afet Yönetim Sistemi.</strong> Tüm hakları saklıdır.
         <div class="float-right d-none d-sm-inline-block">
-            ASP.NET Core MVC — Üniversite Projesi
+            <b>Muğla Sıtkı Koçman Üniversitesi</b> — Web Programlama
         </div>
     </footer>
 

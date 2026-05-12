@@ -109,8 +109,9 @@
 
         <li class="nav-item">
             @{
-                var profileUrl = User.IsInRole("Afetzede") ? "/Afetzede/Profile" :
-                    (User.IsInRole("Gonullu") ? "/Gonullu/Profile" : "/");
+                var profileUrl = User.IsInRole("Admin") ? "/Admin/Profile" :
+                    (User.IsInRole("Afetzede") ? "/Afetzede/Profile" :
+                    (User.IsInRole("Gonullu") ? "/Gonullu/Profile" : "/"));
             }
             <a href="@profileUrl" class="nav-link">
                 <i class="nav-icon fas fa-user-cog"></i>
