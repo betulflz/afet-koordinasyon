@@ -2,40 +2,112 @@
     ViewData["Title"] = "Hakkında";
 }
 
-<div class="row justify-content-center">
+<div class="row">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card card-outline card-primary shadow-sm">
             <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-info-circle mr-2"></i>Proje Hakkında
-                </h3>
+                <h3 class="card-title"><i class="fas fa-info-circle mr-2 text-primary"></i>Proje Hakkında</h3>
             </div>
             <div class="card-body">
                 <h5>Deprem Sonrası Acil Koordinasyon ve Yardım Yönetim Sistemi</h5>
-                <p>
-                    Bu proje, afet anlarında yaşanan bilgi kirliliğini, kaynak dağıtım sorunlarını
-                    ve gönüllü koordinasyonsuzluğunu merkezi bir dijital platformla çözmeyi amaçlar.
+                <p class="text-justify">
+                    Bu proje, afet anlarında yaşanan bilgi kirliliğini, kaynak dağıtım sorunlarını 
+                    ve gönüllü koordinasyonsuzluğunu merkezi bir dijital platformla çözmeyi amaçlar. 
+                    ASP.NET Core MVC mimarisi, rol bazlı yetkilendirme ve harita entegrasyonu ile 
+                    gerçek bir afet senaryosunda kullanılabilir bir yapıya sahiptir.
                 </p>
 
-                <h6 class="mt-4"><i class="fas fa-users mr-2"></i>Sistem Rolleri</h6>
+                <h6 class="mt-4 font-weight-bold border-bottom pb-2"><i class="fas fa-users mr-2 text-primary"></i>Sistem Rolleri</h6>
                 <ul>
-                    <li><strong>Admin (Afet Koordinatörü):</strong> Talepleri yönetir, gönüllüleri görevlendirir, raporları takip eder.</li>
-                    <li><strong>Afetzede:</strong> Yardım talebi oluşturur ve durumunu takip eder.</li>
-                    <li><strong>Gönüllü:</strong> Atanan görevleri kabul eder ve yardımları ulaştırır.</li>
+                    <li><strong>Admin (Afet Koordinatörü):</strong> Talepleri yönetir, gönüllüleri görevlendirir, raporları takip eder, audit log'u inceler.</li>
+                    <li><strong>Afetzede:</strong> Yardım talebi oluşturur (haritadan konum), durumunu takip eder, gerekirse iptal eder.</li>
+                    <li><strong>Gönüllü:</strong> Atanan görevleri kabul eder, yardımı ulaştırır, "Teslim Edildi" olarak işaretler.</li>
                 </ul>
 
-                <h6 class="mt-4"><i class="fas fa-cogs mr-2"></i>Teknolojiler</h6>
-                <ul>
-                    <li>ASP.NET Core MVC (.NET 8)</li>
-                    <li>Entity Framework Core</li>
-                    <li>MSSQL Server</li>
-                    <li>ASP.NET Core Identity</li>
-                    <li>AdminLTE 3 Template</li>
+                <h6 class="mt-4 font-weight-bold border-bottom pb-2"><i class="fas fa-cogs mr-2 text-primary"></i>Teknoloji Yığını</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li>ASP.NET Core MVC (.NET 9)</li>
+                            <li>Entity Framework Core (Code-First)</li>
+                            <li>Microsoft SQL Server (Docker)</li>
+                            <li>ASP.NET Core Identity</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul>
+                            <li>Leaflet 1.9.4 & OpenStreetMap</li>
+                            <li>Chart.js 4.4 (Dinamik Grafikler)</li>
+                            <li>AdminLTE 3 & Bootstrap 4</li>
+                            <li>FontAwesome 5</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h6 class="mt-4 font-weight-bold border-bottom pb-2"><i class="fas fa-history mr-2 text-primary"></i>Faz Geçmişi</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><span class="badge badge-dark">Faz 1</span> Temel iskelet, Entity yapıları, Identity ve AdminLTE entegrasyonu.</li>
+                    <li class="mb-2"><span class="badge badge-dark">Faz 2</span> İş mantığı: Talep akışı, görevlendirme, profil ve bölge yönetimi.</li>
+                    <li class="mb-2"><span class="badge badge-dark">Faz 3</span> Görsel zenginlik: 4 farklı harita entegrasyonu ve Dashboard grafikleri.</li>
+                    <li class="mb-2"><span class="badge badge-dark">Faz 4</span> Cilalama: Audit Log, talep iptal, şifre değişikliği ve anasayfa tasarımı.</li>
                 </ul>
 
-                <p class="text-muted mt-4">
-                    <small>Bu proje üniversite projesi kapsamında geliştirilmiştir.</small>
+                <h6 class="mt-4 font-weight-bold border-bottom pb-2"><i class="fas fa-shield-alt mr-2 text-primary"></i>Mimari Özellikler</h6>
+                <ul>
+                    <li>Soft Delete & Global Query Filter altyapısı</li>
+                    <li>Otomatik Audit Alanları (CreatedBy / UpdatedBy)</li>
+                    <li>AuditLog ile kritik aksiyonların geriye dönük izlenmesi</li>
+                    <li>BaseEntity üzerinden merkezi Id ve Tarih yönetimi</li>
+                </ul>
+
+                <p class="text-muted mt-5 text-center border-top pt-3">
+                    <small>Bu proje Muğla Sıtkı Koçman Üniversitesi Web Programlama dersi final projesi olarak <strong>Betül Filiz</strong> tarafından geliştirilmiştir.</small>
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card card-outline card-info shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-key mr-2 text-info"></i>Demo Hesaplar</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Sistemi tüm özellikleriyle denemek için:</p>
+
+                <div class="mb-3 p-3 border-left border-danger" style="background:#f8f9fa; border-radius:0 6px 6px 0;">
+                    <strong class="text-danger"><i class="fas fa-user-shield mr-1"></i>Admin</strong>
+                    <div class="small mt-1">admin@afet.gov.tr</div>
+                    <div class="small text-muted">Şifre: Admin123!</div>
+                </div>
+
+                <div class="mb-3 p-3 border-left border-warning" style="background:#f8f9fa; border-radius:0 6px 6px 0;">
+                    <strong class="text-warning"><i class="fas fa-user mr-1"></i>Afetzede</strong>
+                    <div class="small mt-1">ayse@example.com</div>
+                    <div class="small text-muted">Şifre: Ayse123!</div>
+                </div>
+
+                <div class="p-3 border-left border-success" style="background:#f8f9fa; border-radius:0 6px 6px 0;">
+                    <strong class="text-success"><i class="fas fa-hands-helping mr-1"></i>Gönüllü</strong>
+                    <div class="small mt-1">mehmet@example.com</div>
+                    <div class="small text-muted">Şifre: Mehmet123!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-outline card-success mt-3 shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-graduation-cap mr-2 text-success"></i>Akademik Bilgi</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Üniversite:</strong></p>
+                <p class="text-muted small mb-2">Muğla Sıtkı Koçman Üniversitesi</p>
+
+                <p class="mb-1"><strong>Ders:</strong></p>
+                <p class="text-muted small mb-2">Web Programlama</p>
+
+                <p class="mb-1"><strong>Geliştirici:</strong></p>
+                <p class="text-muted small mb-0">Betül Filiz</p>
             </div>
         </div>
     </div>
